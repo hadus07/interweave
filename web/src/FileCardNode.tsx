@@ -2,34 +2,15 @@ import { Handle, type NodeProps, Position } from '@xyflow/react'
 import { useEffect, useState } from 'react'
 import type { FileCardData } from '~shared/toReactFlow'
 
-const chipStyle = {
-  padding: '2px 8px',
-  border: '1px solid #ccc',
-  borderRadius: 12,
-  background: '#f5f5f5',
-  fontSize: 11,
-  color: '#333',
-  cursor: 'pointer' as const,
-  userSelect: 'none' as const,
-}
-
-const externalColor: Record<string, string> = {
-  npm: '#e8f5e9',
-  core: '#e3f2fd',
-  unresolved: '#fff3e0',
+const extClass: Record<string, string> = {
+  npm: 'iw-ext-npm',
+  core: 'iw-ext-core',
+  unresolved: 'iw-ext-unresolved',
 }
 
 export default function FileCardNode({ data }: NodeProps) {
-  const {
-    name,
-    path,
-    importCount,
-    importedByCount,
-    externals,
-    sourceExpanded,
-    onExpand,
-    onToggleSource,
-  } = data as Required<FileCardData>
+  const { name, path, importCount, importedByCount, externals, sourceExpanded, onExpand, onToggleSource } =
+    data as Required<FileCardData>
 
   const [sourceHtml, setSourceHtml] = useState<string | null>(null)
   const [sourceStatus, setSourceStatus] = useState<'idle' | 'loading' | 'error'>('idle')
@@ -40,7 +21,6 @@ export default function FileCardNode({ data }: NodeProps) {
       setSourceStatus('idle')
       return
     }
-
     setSourceStatus('loading')
     fetch(`/file?path=${encodeURIComponent(path)}`)
       .then(async (r) => {
@@ -58,67 +38,42 @@ export default function FileCardNode({ data }: NodeProps) {
   }, [sourceExpanded, path])
 
   return (
-    <div
-      style={{
-        width: 240,
-        padding: 12,
-        border: '1px solid #ccc',
-        borderRadius: 8,
-        background: '#fff',
-        fontFamily: 'sans-serif',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-      }}
-    >
+    <div className={`iw-card${sourceExpanded ? ' iw-card--expanded' : ''}`}>
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
       <button
         type="button"
+        className="iw-card-header"
         onClick={() => onToggleSource(path)}
         onPointerDown={(e) => e.stopPropagation()}
-        style={{
-          all: 'unset',
-          display: 'block',
-          width: '100%',
-          cursor: 'pointer',
-        }}
       >
-        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, color: '#111' }}>{name}</div>
-        <div style={{ fontSize: 12, color: '#666', wordBreak: 'break-word', marginBottom: 8 }}>
-          {path}
-        </div>
+        <div className="iw-card-name">{name}</div>
+        <div className="iw-card-path">{path}</div>
       </button>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginBottom: 8 }}>
+      <div className="iw-chip-row">
         <button
           type="button"
-          style={chipStyle}
+          className="iw-chip iw-chip-imports"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onExpand(path, 'imports')}
         >
-          imports ({importCount}) ▶
+          ↗ imports {importCount}
         </button>
         <button
           type="button"
-          style={chipStyle}
+          className="iw-chip iw-chip-importedby"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onExpand(path, 'importedBy')}
         >
-          ◀ imported by ({importedByCount})
+          ↙ imported by {importedByCount}
         </button>
       </div>
       {externals.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+        <div className="iw-ext-row">
           {externals.map((label) => (
             <span
               key={label.name}
               title={`${label.type}: ${label.name}`}
-              style={{
-                padding: '2px 6px',
-                border: '1px solid #bbb',
-                borderRadius: 10,
-                background: externalColor[label.type] ?? '#f5f5f5',
-                fontSize: 10,
-                color: '#444',
-                userSelect: 'none',
-              }}
+              className={`iw-ext-label ${extClass[label.type] ?? ''}`}
             >
               {label.name}
             </span>
@@ -126,19 +81,10 @@ export default function FileCardNode({ data }: NodeProps) {
         </div>
       )}
       {sourceExpanded && (
-        <div
-          style={{
-            maxHeight: 200,
-            overflow: 'auto',
-            border: '1px solid #eee',
-            borderRadius: 4,
-            padding: 8,
-            fontSize: 12,
-            background: '#fafafa',
-          }}
-        >
-          {sourceStatus === 'loading' && <div>loading source…</div>}
-          {sourceStatus === 'error' && <div style={{ color: '#c00' }}>failed to load source</div>}
+        // nowheel: lets trackpad scroll the code instead of panning the canvas
+        <div className="iw-source-panel nowheel">
+          {sourceStatus === 'loading' && <div className="iw-source-loading">loading…</div>}
+          {sourceStatus === 'error' && <div className="iw-source-error">failed to load source</div>}
           {sourceHtml != null && (
             // biome-ignore lint/security/noDangerouslySetInnerHtml: server returns trusted Shiki-highlighted HTML
             <div dangerouslySetInnerHTML={{ __html: sourceHtml }} />

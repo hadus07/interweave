@@ -1,5 +1,6 @@
 import {
   Background,
+  BackgroundVariant,
   Controls,
   type Edge,
   type Node,
@@ -104,7 +105,7 @@ export default function App() {
         nodeTypes={nodeTypes}
         fitView
       >
-        <Background />
+        <Background variant={BackgroundVariant.Dots} color="#1a1c2c" gap={24} size={1} />
         <Controls />
       </ReactFlow>
       <FilePalette

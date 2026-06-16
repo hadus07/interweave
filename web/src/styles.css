@@ -1,0 +1,280 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #0d0e12;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  font-size: 13px;
+  color: #3a3f5c;
+  background: #0d0e12;
+  letter-spacing: 0.05em;
+}
+
+/* ── ReactFlow canvas ──────────────────────────────── */
+
+.react-flow { background: #0d0e12; }
+
+.react-flow__edge-path {
+  stroke: #232640;
+  stroke-width: 1.5;
+}
+
+.react-flow__edge:hover .react-flow__edge-path,
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #6c5ce7;
+  filter: drop-shadow(0 0 3px rgba(108, 92, 231, 0.45));
+}
+
+.react-flow__arrowhead path { fill: #232640; stroke: none; }
+
+.react-flow__attribution { background: transparent; }
+.react-flow__attribution a { color: #2a2d40; }
+
+.react-flow__controls {
+  --xy-controls-button-background-color: #131520;
+  --xy-controls-button-background-color-hover: #1c1f30;
+  --xy-controls-button-color: #5a6080;
+  --xy-controls-button-color-hover: #6c5ce7;
+  --xy-controls-button-border-color: #1a1c2c;
+  --xy-controls-box-shadow: none;
+  border: 1px solid #232640;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── File cards ────────────────────────────────────── */
+
+.iw-card {
+  display: inline-flex;
+  flex-direction: column;
+  border: 1px solid #232640;
+  border-top: 2px solid #6c5ce7;
+  border-radius: 8px;
+  background: #131520;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #dde0f5;
+  overflow: hidden;
+}
+
+.iw-card-header {
+  all: unset;
+  box-sizing: border-box;
+  padding: 10px 16px 8px 12px;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: background 0.12s;
+}
+
+.iw-card-header:hover { background: rgba(108, 92, 231, 0.06); }
+
+.iw-card-name {
+  font-family: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  font-weight: 500;
+  font-size: 13px;
+  color: #dde0f5;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.iw-card-path {
+  font-family: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  font-size: 10px;
+  color: #3a3f5c;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+/* Chips */
+
+.iw-chip-row {
+  contain: inline-size;
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px 8px;
+  border-top: 1px solid #1a1c2c;
+}
+
+.iw-chip {
+  all: unset;
+  flex: 1;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  letter-spacing: 0.01em;
+}
+
+.iw-chip-imports {
+  border: 1px solid #2a2860;
+  color: #5a54a0;
+}
+
+.iw-chip-imports:hover {
+  border-color: #6c5ce7;
+  color: #9d93f0;
+  background: rgba(108, 92, 231, 0.08);
+}
+
+.iw-chip-importedby {
+  border: 1px solid #1a2a50;
+  color: #3a5898;
+}
+
+.iw-chip-importedby:hover {
+  border-color: #4a8eff;
+  color: #7ab0ff;
+  background: rgba(74, 142, 255, 0.08);
+}
+
+/* External dep labels */
+
+.iw-ext-row {
+  contain: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 10px 8px;
+}
+
+.iw-ext-label {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  user-select: none;
+  letter-spacing: 0.01em;
+}
+
+.iw-ext-npm      { background: #0f2020; border: 1px solid #1a3a2a; color: #3db06a; }
+.iw-ext-core     { background: #0f1a2a; border: 1px solid #1a2a3a; color: #4a8eff; }
+.iw-ext-unresolved { background: #1e1a0a; border: 1px solid #2a2010; color: #c0963a; }
+
+/* Source panel */
+
+.iw-card--expanded {
+  min-width: 420px;
+}
+
+.iw-source-panel {
+  font-family: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  font-size: 8px;
+  max-height: 400px;
+  overflow: auto;
+  border-top: 1px solid #1a1c2c;
+  padding: 0;
+  background: #090a10;
+  color: #dde0f5;
+}
+
+.iw-source-panel pre {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 8px;
+  line-height: 1.5;
+  background: transparent !important;
+}
+
+.iw-source-loading {
+  font-family: 'JetBrains Mono', 'Menlo', monospace;
+  font-size: 11px;
+  color: #3a3f5c;
+  padding: 4px 0;
+}
+
+.iw-source-error {
+  font-family: 'JetBrains Mono', 'Menlo', monospace;
+  font-size: 11px;
+  color: #c05050;
+  padding: 4px 0;
+}
+
+/* ── File palette ──────────────────────────────────── */
+
+.iw-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 10, 0.75);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.iw-palette-dialog {
+  width: 560px;
+  max-height: 400px;
+  background: #111318;
+  border: 1px solid #232640;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.iw-palette-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  border: none;
+  border-bottom: 1px solid #1a1c2c;
+  background: transparent;
+  color: #dde0f5;
+  outline: none;
+  box-sizing: border-box;
+  caret-color: #6c5ce7;
+}
+
+.iw-palette-input::placeholder { color: #3a3f5c; }
+
+.iw-palette-list { overflow-y: auto; max-height: 320px; }
+
+.iw-palette-empty {
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', 'Menlo', monospace;
+  font-size: 12px;
+  color: #3a3f5c;
+}
+
+.iw-palette-item {
+  padding: 9px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+[cmdk-item][data-selected='true'].iw-palette-item {
+  background: #17192a;
+  border-left-color: #6c5ce7;
+}
+
+.iw-palette-item-name {
+  font-family: 'JetBrains Mono', 'Menlo', monospace;
+  font-weight: 500;
+  font-size: 12px;
+  color: #dde0f5;
+}
+
+.iw-palette-item-path {
+  font-family: 'JetBrains Mono', 'Menlo', monospace;
+  font-size: 10px;
+  color: #3a3f5c;
+}

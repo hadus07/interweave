@@ -31,7 +31,7 @@ const EXT_TO_LANG: Record<string, string> = {
 
 const highlighterPromise = getSingletonHighlighter({
   langs: ['typescript', 'javascript', 'tsx', 'jsx'],
-  themes: ['github-light'],
+  themes: ['github-dark'],
 })
 
 export interface ServerHandle {
@@ -96,7 +96,7 @@ export function startServer(
         const ext = path.extname(real).toLowerCase()
         const lang = EXT_TO_LANG[ext] ?? 'typescript'
         const highlighter = await highlighterPromise
-        const html = highlighter.codeToHtml(source, { lang, theme: 'github-light' })
+        const html = highlighter.codeToHtml(source, { lang, theme: 'github-dark' })
         res.writeHead(200, { 'Content-Type': 'text/html' })
         res.end(html)
       } catch {
