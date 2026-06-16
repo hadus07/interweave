@@ -7,7 +7,7 @@ const root = fixtureRoot("relative-imports");
 const builtAssets = new URL("../dist/web/", import.meta.url);
 
 describe("server", () => {
-  let handle: Awaited<ReturnType<typeof startServer>>;
+  let handle: import("../src/server.js").ServerHandle;
 
   it("serves /graph matching buildGraph", async () => {
     const graph = await buildGraph(root);

@@ -5,12 +5,7 @@ const CARD_WIDTH = 240;
 const CARD_HEIGHT = 120;
 const GAP = 40;
 
-export interface ReactFlowGraph {
-  nodes: Node<{ name: string; path: string }>[];
-  edges: Edge[];
-}
-
-export function toReactFlow(graph: Graph, visible: Set<string>): ReactFlowGraph {
+export function toReactFlow(graph: Graph, visible: Set<string>) {
   const nodes: Node<{ name: string; path: string }>[] = [];
   const edges: Edge[] = [];
 

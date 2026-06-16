@@ -3,21 +3,6 @@ import { cruise, type ICruiseOptions } from "dependency-cruiser";
 import type { Graph, GraphNode } from "./shared/graph.js";
 
 const LOCAL_TYPES = new Set(["local", "localmodule"]);
-const EXTERNAL_TYPES = new Set([
-  "npm",
-  "npm-dev",
-  "npm-optional",
-  "npm-peer",
-  "npm-no-pkg",
-  "core",
-  "unresolved",
-  "unknown",
-  "aliased",
-  "aliased-tsconfig",
-  "aliased-webpack",
-  "aliased-babel",
-  "aliased-subpath",
-]);
 
 export async function buildGraph(root: string): Promise<Graph> {
   const options: ICruiseOptions = {
@@ -97,15 +82,13 @@ function toProjectRelative(filePath: string, root: string): string {
 
 function isLocal(types: string[], resolved: string, root: string): boolean {
   if (types.some((t) => LOCAL_TYPES.has(t))) return true;
-  if (types.some((t) => EXTERNAL_TYPES.has(t))) return false;
-  // Default to local only if it resolves inside the project and looks like a file path.
+  if (types.length > 0) return false;
   if (!resolved) return false;
   const absolute = path.isAbsolute(resolved) ? resolved : path.resolve(root, resolved);
   const relative = path.relative(path.resolve(root), absolute);
   return !relative.startsWith("..") && !relative.startsWith("node_modules");
 }
 
-function sortedUnique<T extends string>(arr: T[]): T[] {
-  const set = new Set(arr);
-  return [...set].sort() as T[];
+function sortedUnique(arr: string[]): string[] {
+  return [...new Set(arr)].sort();
 }

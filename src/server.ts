@@ -40,10 +40,9 @@ export function startServer(
     }
 
     const rawPath = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
-    const safePath = path.normalize(rawPath).replace(/^\/(\.\.)+/, "/");
-    const target = path.resolve(webRoot, safePath.startsWith("/") ? safePath.slice(1) : safePath);
-    const isInside =
-      target === path.resolve(webRoot) || target.startsWith(path.resolve(webRoot) + path.sep);
+    const target = path.resolve(webRoot, rawPath.startsWith("/") ? rawPath.slice(1) : rawPath);
+    const rootResolved = path.resolve(webRoot);
+    const isInside = target === rootResolved || target.startsWith(rootResolved + path.sep);
 
     if (!isInside) {
       res.writeHead(403);

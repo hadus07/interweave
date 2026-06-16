@@ -23,14 +23,12 @@ async function main() {
 
   const { port, close } = await startServer(graph);
 
-  const params = new URLSearchParams();
+  const url = new URL("/", `http://127.0.0.1:${port}`);
   if (validSeeds.length > 0) {
-    params.set("seeds", validSeeds.join(","));
+    url.searchParams.set("seeds", validSeeds.join(","));
   }
-
-  const url = `http://127.0.0.1:${port}/${params.toString() ? `?${params.toString()}` : ""}`;
   console.log(`interweave running at ${url}`);
-  await open(url);
+  await open(url.toString());
 
   const shutdown = async () => {
     await close();
