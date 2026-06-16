@@ -1,19 +1,19 @@
 import { Handle, type NodeProps, Position } from '@xyflow/react'
 import type { FileCardData } from '~shared/toReactFlow'
 
+const chipStyle = {
+  padding: '2px 8px',
+  border: '1px solid #ccc',
+  borderRadius: 12,
+  background: '#f5f5f5',
+  fontSize: 11,
+  color: '#333',
+  cursor: 'pointer' as const,
+  userSelect: 'none' as const,
+}
+
 export default function FileCardNode({ data }: NodeProps) {
   const { name, path, importCount, importedByCount, onExpand } = data as Required<FileCardData>
-
-  const chipStyle = {
-    padding: '2px 8px',
-    border: '1px solid #ccc',
-    borderRadius: 12,
-    background: '#f5f5f5',
-    fontSize: 11,
-    color: '#333',
-    cursor: 'pointer' as const,
-    userSelect: 'none' as const,
-  }
 
   return (
     <div

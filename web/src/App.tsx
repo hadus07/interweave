@@ -31,6 +31,7 @@ export default function App() {
     fetch('/graph')
       .then((r) => r.json())
       .then(setGraph)
+      .catch((err) => console.error('failed to load graph', err))
   }, [])
 
   const expand = useCallback(
@@ -56,7 +57,7 @@ export default function App() {
         setNodes(layoutNodes.map((n) => ({ ...n, data: { ...n.data, onExpand: expand } })))
         setEdges(layoutEdges)
       })
-      .catch(() => {})
+      .catch((err) => console.error('layout failed', err))
   }, [graph, expanded, expand, setNodes, setEdges])
 
   useEffect(() => {

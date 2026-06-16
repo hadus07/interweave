@@ -1,5 +1,4 @@
 import type { Edge, Node } from '@xyflow/react'
-import ELK from 'elkjs/lib/elk.bundled.js'
 import type { Graph } from './graph.js'
 
 export const CARD_WIDTH = 240
@@ -45,7 +44,9 @@ export async function toReactFlow(graph: Graph, visible: Set<string>) {
 
   if (nodes.length === 0) return { nodes, edges }
 
+  const { default: ELK } = await import('elkjs/lib/elk.bundled.js')
   const elk = new ELK()
+  const nodeById = new Map(nodes.map((n) => [n.id, n]))
   const elkGraph = {
     id: 'root',
     layoutOptions: {
@@ -69,7 +70,7 @@ export async function toReactFlow(graph: Graph, visible: Set<string>) {
 
   const layout = await elk.layout(elkGraph)
   for (const child of layout.children ?? []) {
-    const node = nodes.find((n) => n.id === child.id)
+    const node = nodeById.get(child.id)
     if (node) {
       node.position = { x: child.x ?? 0, y: child.y ?? 0 }
     }
