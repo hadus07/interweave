@@ -1,5 +1,5 @@
-import lodash from "lodash";
+import lodash from 'lodash'
 
 export function id<T>(x: T): T {
-  return lodash.identity(x);
+  return lodash.identity(x)
 }

@@ -1,6 +1,6 @@
-import { makeWidget } from "./utils";
-import type { Widget } from "./types";
+import type { Widget } from './types'
+import { makeWidget } from './utils'
 
 export function run(): Widget {
-  return makeWidget("hello");
+  return makeWidget('hello')
 }
