@@ -13,9 +13,23 @@ const chipStyle = {
   userSelect: 'none' as const,
 }
 
+const externalColor: Record<string, string> = {
+  npm: '#e8f5e9',
+  core: '#e3f2fd',
+  unresolved: '#fff3e0',
+}
+
 export default function FileCardNode({ data }: NodeProps) {
-  const { name, path, importCount, importedByCount, sourceExpanded, onExpand, onToggleSource } =
-    data as Required<FileCardData>
+  const {
+    name,
+    path,
+    importCount,
+    importedByCount,
+    externals,
+    sourceExpanded,
+    onExpand,
+    onToggleSource,
+  } = data as Required<FileCardData>
 
   const [sourceHtml, setSourceHtml] = useState<string | null>(null)
   const [sourceStatus, setSourceStatus] = useState<'idle' | 'loading' | 'error'>('idle')
@@ -90,6 +104,27 @@ export default function FileCardNode({ data }: NodeProps) {
           ◀ imported by ({importedByCount})
         </button>
       </div>
+      {externals.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+          {externals.map((label) => (
+            <span
+              key={label.name}
+              title={`${label.type}: ${label.name}`}
+              style={{
+                padding: '2px 6px',
+                border: '1px solid #bbb',
+                borderRadius: 10,
+                background: externalColor[label.type] ?? '#f5f5f5',
+                fontSize: 10,
+                color: '#444',
+                userSelect: 'none',
+              }}
+            >
+              {label.name}
+            </span>
+          ))}
+        </div>
+      )}
       {sourceExpanded && (
         <div
           style={{

@@ -20,7 +20,7 @@ const graph: Graph = {
     'c.ts': ['b.ts'],
   },
   external: {
-    'a.ts': ['react'],
+    'a.ts': [{ name: 'react', type: 'npm' as const }],
     'b.ts': [],
     'c.ts': [],
   },
@@ -61,6 +61,14 @@ describe('toReactFlow', () => {
     expect(byId['a.ts']).toMatchObject({ importCount: 1, importedByCount: 0 })
     expect(byId['b.ts']).toMatchObject({ importCount: 1, importedByCount: 1 })
     expect(byId['c.ts']).toMatchObject({ importCount: 0, importedByCount: 1 })
+  })
+
+  it('passes external labels through to node data', async () => {
+    const { nodes } = await toReactFlow(graph, new Set(['a.ts', 'b.ts', 'c.ts']))
+    const byId = Object.fromEntries(nodes.map((n) => [n.id, n.data]))
+
+    expect(byId['a.ts'].externals).toEqual([{ name: 'react', type: 'npm' }])
+    expect(byId['b.ts'].externals).toEqual([])
   })
 
   it('produces deterministic output for the same visible set', async () => {

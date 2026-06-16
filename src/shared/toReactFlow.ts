@@ -1,5 +1,5 @@
 import type { Edge, Node } from '@xyflow/react'
-import type { Graph } from './graph.js'
+import type { ExternalLabel, Graph } from './graph.js'
 
 export const CARD_WIDTH = 240
 export const CARD_HEIGHT = 120
@@ -12,6 +12,7 @@ export interface FileCardData extends Record<string, unknown> {
   path: string
   importCount: number
   importedByCount: number
+  externals: ExternalLabel[]
   sourceExpanded?: boolean
   onExpand?(path: string, direction: ExpandDirection): void
   onToggleSource?(path: string): void
@@ -38,6 +39,7 @@ export async function toReactFlow(
         ...node,
         importCount: graph.forward[id]?.length ?? 0,
         importedByCount: graph.reverse[id]?.length ?? 0,
+        externals: graph.external[id] ?? [],
         sourceExpanded: isSourceExpanded,
       },
       measured: { width: CARD_WIDTH, height },

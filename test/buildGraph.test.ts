@@ -21,14 +21,21 @@ describe('buildGraph', () => {
     expect(graph.external['src/utils.ts']).toEqual([])
   })
 
-  it('labels external imports and skips node_modules', async () => {
+  it('labels external imports by type and skips node_modules', async () => {
     const graph = await buildGraph(fixtureRoot('external-deps'))
 
-    expect(Object.keys(graph.nodes)).toContain('src/index.ts')
+    expect(Object.keys(graph.nodes).sort()).toEqual(['src/index.ts', 'src/utils.ts'])
     expect(graph.forward['src/index.ts']).toEqual(['src/utils.ts'])
-    expect(graph.external['src/index.ts']).toEqual(expect.arrayContaining(['fs', 'react']))
-    expect(graph.external['src/utils.ts']).toContain('lodash')
+    expect(graph.external['src/index.ts']).toEqual(
+      expect.arrayContaining([
+        { name: 'fs', type: 'core' },
+        { name: 'react', type: 'npm' },
+      ]),
+    )
+    expect(graph.external['src/utils.ts']).toContainEqual({ name: 'lodash', type: 'unresolved' })
     expect(Object.keys(graph.nodes).some((p) => p.includes('node_modules'))).toBe(false)
+    expect(Object.keys(graph.nodes)).not.toContain('fs')
+    expect(Object.keys(graph.nodes)).not.toContain('lodash')
   })
 
   it('renders import cycles without dropping edges', async () => {

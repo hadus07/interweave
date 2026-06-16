@@ -1,6 +1,7 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import { type ICruiseOptions, cruise } from 'dependency-cruiser'
-import type { Graph, GraphNode } from './shared/graph.js'
+import type { ExternalLabel, ExternalLabelType, Graph, GraphNode } from './shared/graph.js'
 
 const LOCAL_TYPES = new Set(['local', 'localmodule'])
 
@@ -33,7 +34,8 @@ export async function buildGraph(root: string): Promise<Graph> {
     const raw = (mod as { source?: string }).source
     if (!raw || typeof raw !== 'string') continue
     const source = toProjectRelative(raw, root)
-    if (!source || source.startsWith('../')) continue
+    if (!source) continue
+    if (!isProjectFile(raw, root)) continue
 
     const node: GraphNode = {
       path: source,
@@ -63,12 +65,12 @@ export async function buildGraph(root: string): Promise<Graph> {
           graph.forward[source].push(target)
         }
       } else {
-        graph.external[source].push(depModule)
+        graph.external[source].push({ name: depModule, type: classifyExternal(types) })
       }
     }
 
     graph.forward[source] = sortedUnique(graph.forward[source])
-    graph.external[source] = sortedUnique(graph.external[source])
+    graph.external[source] = uniqueLabels(graph.external[source])
   }
 
   for (const [source, targets] of Object.entries(graph.forward)) {
@@ -91,6 +93,15 @@ function toProjectRelative(filePath: string, root: string): string {
   return relative
 }
 
+function isProjectFile(raw: string, root: string): boolean {
+  const absolute = path.isAbsolute(raw) ? raw : path.resolve(root, raw)
+  try {
+    return fs.statSync(absolute).isFile()
+  } catch {
+    return false
+  }
+}
+
 function isLocal(types: string[], resolved: string, root: string): boolean {
   if (types.some((t) => LOCAL_TYPES.has(t))) return true
   if (types.length > 0) return false
@@ -100,6 +111,24 @@ function isLocal(types: string[], resolved: string, root: string): boolean {
   return !relative.startsWith('..') && !relative.startsWith('node_modules')
 }
 
+function classifyExternal(types: string[]): ExternalLabelType {
+  if (types.includes('core')) return 'core'
+  if (types.some((t) => t.startsWith('npm'))) return 'npm'
+  return 'unresolved'
+}
+
 function sortedUnique(arr: string[]): string[] {
   return [...new Set(arr)].sort()
+}
+
+function uniqueLabels(arr: ExternalLabel[]): ExternalLabel[] {
+  const seen = new Set<string>()
+  const out: ExternalLabel[] = []
+  for (const label of arr) {
+    const key = `${label.type}:${label.name}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(label)
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name))
 }

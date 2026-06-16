@@ -17,10 +17,10 @@ Show a file's outside dependencies on its card without letting the graph expand 
 
 ## Acceptance criteria
 
-- [ ] A card lists the external/npm/core packages its file imports as labels.
-- [ ] External labels are visually distinct from local cards and cannot be expanded.
-- [ ] External packages never appear as their own cards on the canvas.
-- [ ] `buildGraph` seam: externals are attached to the importing node as labels, not emitted as nodes; `node_modules` is not traversed.
+- [x] A card lists the external/npm/core packages its file imports as labels.
+- [x] External labels are visually distinct from local cards and cannot be expanded.
+- [x] External packages never appear as their own cards on the canvas.
+- [x] `buildGraph` seam: externals are attached to the importing node as labels, not emitted as nodes; `node_modules` is not traversed.
 
 ## Blocked by
 
