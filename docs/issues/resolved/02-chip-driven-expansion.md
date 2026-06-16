@@ -24,14 +24,14 @@ as new cards, placed automatically with no overlaps.
 
 ## Acceptance criteria
 
-- [ ] Folded cards display accurate `imports` and `imported by` counts.
-- [ ] Clicking `imports` adds the forward-dependency cards to the canvas.
-- [ ] Clicking `imported by` adds the reverse-dependency cards to the canvas.
-- [ ] Expansion works on a folded card without expanding its source.
-- [ ] New cards appear near their parent and never overlap existing cards.
-- [ ] A file already on the canvas is reused, not duplicated, when reached again.
-- [ ] A fixture project with an import cycle renders without crashing.
-- [ ] `toReactFlow` seam: given a graph + expanded set, returns expected nodes/edges, no overlapping positions, deterministic output.
+- [x] Folded cards display accurate `imports` and `imported by` counts. (`toReactFlow` test asserts counts match forward/reverse lengths.)
+- [x] Clicking `imports` adds the forward-dependency cards to the canvas. (manual-verify)
+- [x] Clicking `imported by` adds the reverse-dependency cards to the canvas. (manual-verify)
+- [x] Expansion works on a folded card without expanding its source. (manual-verify)
+- [x] New cards appear near their parent and never overlap existing cards. (`toReactFlow` test asserts no overlapping rectangles; elkjs layered layout places descendants near parents.)
+- [x] A file already on the canvas is reused, not duplicated, when reached again. (manual-verify)
+- [x] A fixture project with an import cycle renders without crashing. (`test/fixtures/cycle/` + `toReactFlow` cycle test + manual-verify.)
+- [x] `toReactFlow` seam: given a graph + expanded set, returns expected nodes/edges, no overlapping positions, deterministic output. (`test/toReactFlow.test.ts`)
 
 ## Blocked by
 

@@ -1,20 +1,30 @@
 import {
   Background,
   Controls,
+  type Edge,
+  type Node,
   ReactFlow,
   useEdgesState,
   useNodesState,
   useReactFlow,
 } from '@xyflow/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Graph } from '~shared/graph'
+import type { ExpandDirection, FileCardData } from '~shared/toReactFlow'
 import { toReactFlow } from '~shared/toReactFlow'
 import FileCardNode from './FileCardNode'
 
 const nodeTypes = { fileCard: FileCardNode }
 
+function readSeeds(): Set<string> {
+  const params = new URLSearchParams(window.location.search)
+  const raw = params.get('seeds')
+  return raw ? new Set(raw.split(',')) : new Set<string>()
+}
+
 export default function App() {
   const [graph, setGraph] = useState<Graph | null>(null)
+  const [expanded, setExpanded] = useState<Set<string>>(readSeeds)
   const { fitView } = useReactFlow()
 
   useEffect(() => {
@@ -23,23 +33,35 @@ export default function App() {
       .then(setGraph)
   }, [])
 
-  const seeds = useMemo(() => {
-    const params = new URLSearchParams(window.location.search)
-    const raw = params.get('seeds')
-    return raw ? new Set(raw.split(',')) : new Set<string>()
-  }, [])
+  const expand = useCallback(
+    (path: string, direction: ExpandDirection) => {
+      if (!graph) return
+      setExpanded((prev) => {
+        const next = new Set(prev)
+        const related = direction === 'imports' ? graph.forward[path] : graph.reverse[path]
+        for (const target of related ?? []) next.add(target)
+        return next
+      })
+    },
+    [graph],
+  )
 
-  const initial = useMemo(() => {
-    if (!graph) return { nodes: [], edges: [] }
-    return toReactFlow(graph, seeds)
-  }, [graph, seeds])
-
-  const [nodes, , onNodesChange] = useNodesState(initial.nodes)
-  const [edges, , onEdgesChange] = useEdgesState(initial.edges)
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<FileCardData>>([])
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
 
   useEffect(() => {
-    if (initial.nodes.length > 0) fitView({ padding: 0.2 })
-  }, [initial.nodes, fitView])
+    if (!graph) return
+    toReactFlow(graph, expanded)
+      .then(({ nodes: layoutNodes, edges: layoutEdges }) => {
+        setNodes(layoutNodes.map((n) => ({ ...n, data: { ...n.data, onExpand: expand } })))
+        setEdges(layoutEdges)
+      })
+      .catch(() => {})
+  }, [graph, expanded, expand, setNodes, setEdges])
+
+  useEffect(() => {
+    if (nodes.length > 0) fitView({ padding: 0.2, duration: 300 })
+  }, [nodes, fitView])
 
   if (!graph) return <div className="loading">loading…</div>
 

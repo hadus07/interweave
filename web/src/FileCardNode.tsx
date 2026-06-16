@@ -1,7 +1,20 @@
 import { Handle, type NodeProps, Position } from '@xyflow/react'
+import type { FileCardData } from '~shared/toReactFlow'
 
 export default function FileCardNode({ data }: NodeProps) {
-  const { name, path } = data as { name: string; path: string }
+  const { name, path, importCount, importedByCount, onExpand } = data as Required<FileCardData>
+
+  const chipStyle = {
+    padding: '2px 8px',
+    border: '1px solid #ccc',
+    borderRadius: 12,
+    background: '#f5f5f5',
+    fontSize: 11,
+    color: '#333',
+    cursor: 'pointer' as const,
+    userSelect: 'none' as const,
+  }
+
   return (
     <div
       style={{
@@ -16,7 +29,27 @@ export default function FileCardNode({ data }: NodeProps) {
     >
       <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
       <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, color: '#111' }}>{name}</div>
-      <div style={{ fontSize: 12, color: '#666', wordBreak: 'break-word' }}>{path}</div>
+      <div style={{ fontSize: 12, color: '#666', wordBreak: 'break-word', marginBottom: 8 }}>
+        {path}
+      </div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+        <button
+          type="button"
+          style={chipStyle}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => onExpand(path, 'imports')}
+        >
+          imports ({importCount}) ▶
+        </button>
+        <button
+          type="button"
+          style={chipStyle}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => onExpand(path, 'importedBy')}
+        >
+          ◀ imported by ({importedByCount})
+        </button>
+      </div>
       <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </div>
   )

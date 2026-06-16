@@ -25,6 +25,7 @@ export async function buildGraph(root: string): Promise<Graph> {
     root,
     nodes: {},
     forward: {},
+    reverse: {},
     external: {},
   }
 
@@ -40,6 +41,7 @@ export async function buildGraph(root: string): Promise<Graph> {
     }
     graph.nodes[source] = node
     graph.forward[source] = []
+    graph.reverse[source] = []
     graph.external[source] = []
 
     const deps = (mod as { dependencies?: unknown[] }).dependencies ?? []
@@ -67,6 +69,15 @@ export async function buildGraph(root: string): Promise<Graph> {
 
     graph.forward[source] = sortedUnique(graph.forward[source])
     graph.external[source] = sortedUnique(graph.external[source])
+  }
+
+  for (const [source, targets] of Object.entries(graph.forward)) {
+    for (const target of targets) {
+      graph.reverse[target].push(source)
+    }
+  }
+  for (const source of Object.keys(graph.reverse)) {
+    graph.reverse[source] = sortedUnique(graph.reverse[source])
   }
 
   return graph

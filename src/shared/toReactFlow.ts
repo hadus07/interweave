@@ -1,15 +1,22 @@
 import type { Edge, Node } from '@xyflow/react'
+import ELK from 'elkjs/lib/elk.bundled.js'
 import type { Graph } from './graph.js'
 
-const CARD_WIDTH = 240
-const CARD_HEIGHT = 120
-const GAP = 40
+export const CARD_WIDTH = 240
+export const CARD_HEIGHT = 120
 
-export function toReactFlow(graph: Graph, visible: Set<string>) {
-  const nodes: Node<{ name: string; path: string }>[] = []
-  const edges: Edge[] = []
+export type ExpandDirection = 'imports' | 'importedBy'
 
-  let index = 0
+export interface FileCardData extends Record<string, unknown> {
+  name: string
+  path: string
+  importCount: number
+  importedByCount: number
+  onExpand?(path: string, direction: ExpandDirection): void
+}
+
+export async function toReactFlow(graph: Graph, visible: Set<string>) {
+  const nodes: Node<FileCardData>[] = []
   for (const id of [...visible].sort()) {
     const node = graph.nodes[id]
     if (!node) continue
@@ -17,22 +24,54 @@ export function toReactFlow(graph: Graph, visible: Set<string>) {
     nodes.push({
       id,
       type: 'fileCard',
-      position: { x: index * (CARD_WIDTH + GAP), y: 0 },
-      data: node,
+      position: { x: 0, y: 0 },
+      data: {
+        ...node,
+        importCount: graph.forward[id]?.length ?? 0,
+        importedByCount: graph.reverse[id]?.length ?? 0,
+      },
       measured: { width: CARD_WIDTH, height: CARD_HEIGHT },
     })
-    index++
   }
 
+  const edges: Edge[] = []
   for (const [source, targets] of Object.entries(graph.forward)) {
     if (!visible.has(source)) continue
     for (const target of targets) {
       if (!visible.has(target)) continue
-      edges.push({
-        id: `${source}->${target}`,
-        source,
-        target,
-      })
+      edges.push({ id: `${source}->${target}`, source, target })
+    }
+  }
+
+  if (nodes.length === 0) return { nodes, edges }
+
+  const elk = new ELK()
+  const elkGraph = {
+    id: 'root',
+    layoutOptions: {
+      'elk.algorithm': 'layered',
+      'elk.direction': 'RIGHT',
+      'elk.spacing.nodeNode': '40',
+      'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+      'elk.layered.considerModelOrder': 'NODES_AND_EDGES',
+    },
+    children: nodes.map((n) => ({
+      id: n.id,
+      width: CARD_WIDTH,
+      height: CARD_HEIGHT,
+    })),
+    edges: edges.map((e) => ({
+      id: e.id,
+      sources: [e.source],
+      targets: [e.target],
+    })),
+  }
+
+  const layout = await elk.layout(elkGraph)
+  for (const child of layout.children ?? []) {
+    const node = nodes.find((n) => n.id === child.id)
+    if (node) {
+      node.position = { x: child.x ?? 0, y: child.y ?? 0 }
     }
   }
 
