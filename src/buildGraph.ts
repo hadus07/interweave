@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { type ICruiseOptions, cruise } from 'dependency-cruiser'
+import JSON5 from 'json5'
 import type { ExternalLabel, ExternalLabelType, Graph, GraphNode } from './shared/graph.js'
 
 const LOCAL_TYPES = new Set(['local', 'localmodule'])
@@ -23,7 +24,8 @@ export async function buildGraph(root: string, tsconfig?: string): Promise<Graph
     moduleSystems: ['es6', 'cjs'],
     combinedDependencies: true,
     tsPreCompilationDeps: true,
-    // ponytail: alias not in dep-cruiser types but supported at runtime
+    // ponytail: enhancedResolveOptions.alias works at runtime but isn't in
+    // dep-cruiser's types yet; drop the `as ICruiseOptions` cast once it is.
     ...(Object.keys(alias).length > 0 ? { enhancedResolveOptions: { alias } } : {}),
   } as ICruiseOptions
 
@@ -147,9 +149,9 @@ function findTsconfigs(dir: string, out: string[] = []): string[] {
 
 function tsconfigAlias(tsconfigPath: string): Record<string, string> {
   try {
-    // ponytail: strip // line comments so JSONC tsconfigs parse cleanly
-    const raw = fs.readFileSync(tsconfigPath, 'utf8').replace(/\/\/[^\n]*/g, '')
-    const tc = JSON.parse(raw) as { compilerOptions?: { paths?: Record<string, string[]>; baseUrl?: string } }
+    const tc = JSON5.parse(fs.readFileSync(tsconfigPath, 'utf8')) as {
+      compilerOptions?: { paths?: Record<string, string[]>; baseUrl?: string }
+    }
     const paths = tc.compilerOptions?.paths ?? {}
     const baseUrl = tc.compilerOptions?.baseUrl ?? '.'
     const dir = path.dirname(tsconfigPath)

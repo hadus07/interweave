@@ -8,7 +8,7 @@ import type { Graph } from './shared/graph.js'
 
 // The one real security boundary: confine a request path to inside `root`.
 // Returns the resolved real path, or null if it escapes (reject as 403).
-async function resolveInside(root: string, decodedPath: string): Promise<string | null> {
+export async function resolveInside(root: string, decodedPath: string): Promise<string | null> {
   if (path.isAbsolute(decodedPath)) return null
   const rootResolved = path.resolve(root)
   const requested = path.resolve(rootResolved, decodedPath)
@@ -16,6 +16,29 @@ async function resolveInside(root: string, decodedPath: string): Promise<string 
   const real = await fs.realpath(requested).catch(() => requested)
   if (real !== rootResolved && !real.startsWith(rootResolved + path.sep)) return null
   return real
+}
+
+const EXT_TO_LANG: Record<string, string> = {
+  '.ts': 'typescript',
+  '.tsx': 'tsx',
+  '.js': 'javascript',
+  '.jsx': 'jsx',
+  '.mjs': 'javascript',
+  '.cjs': 'javascript',
+}
+
+const highlighterPromise = getSingletonHighlighter({
+  langs: ['typescript', 'javascript', 'tsx', 'jsx'],
+  themes: ['github-dark'],
+})
+
+// Read a project file live and return server-side Shiki-highlighted HTML.
+// Shared by the production server and the dev Vite plugin.
+export async function highlightFile(absPath: string): Promise<string> {
+  const source = await fs.readFile(absPath, 'utf8')
+  const lang = EXT_TO_LANG[path.extname(absPath).toLowerCase()] ?? 'typescript'
+  const highlighter = await highlighterPromise
+  return highlighter.codeToHtml(source, { lang, theme: 'github-dark' })
 }
 
 const defaultAssetsUrl = new URL('./web/', import.meta.url)
@@ -32,20 +55,6 @@ const MIME_TYPES: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
 }
-
-const EXT_TO_LANG: Record<string, string> = {
-  '.ts': 'typescript',
-  '.tsx': 'tsx',
-  '.js': 'javascript',
-  '.jsx': 'jsx',
-  '.mjs': 'javascript',
-  '.cjs': 'javascript',
-}
-
-const highlighterPromise = getSingletonHighlighter({
-  langs: ['typescript', 'javascript', 'tsx', 'jsx'],
-  themes: ['github-dark'],
-})
 
 export interface ServerHandle {
   port: number
@@ -108,11 +117,7 @@ export function startServer(
           return
         }
 
-        const source = await fs.readFile(real, 'utf8')
-        const ext = path.extname(real).toLowerCase()
-        const lang = EXT_TO_LANG[ext] ?? 'typescript'
-        const highlighter = await highlighterPromise
-        const html = highlighter.codeToHtml(source, { lang, theme: 'github-dark' })
+        const html = await highlightFile(real)
         res.writeHead(200, { 'Content-Type': 'text/html' })
         res.end(html)
       } catch {
@@ -124,11 +129,9 @@ export function startServer(
     }
 
     const rawPath = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname)
-    const target = path.resolve(webRoot, rawPath.startsWith('/') ? rawPath.slice(1) : rawPath)
-    const rootResolved = path.resolve(webRoot)
-    const isInside = target === rootResolved || target.startsWith(rootResolved + path.sep)
+    const target = await resolveInside(webRoot, rawPath.replace(/^\/+/, ''))
 
-    if (!isInside) {
+    if (!target) {
       res.writeHead(403)
       res.end('Forbidden')
       return

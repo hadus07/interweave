@@ -1,4 +1,6 @@
 {
+  // exercise the JSONC stripper: line comment, block comment, trailing commas
+  /* baseUrl stays "." */
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -6,8 +8,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": ["src/*"],
+    },
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
 }
