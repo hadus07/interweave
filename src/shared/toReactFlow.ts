@@ -22,6 +22,10 @@ export async function toReactFlow(
   graph: Graph,
   visible: Set<string>,
   sourceExpanded?: Set<string>,
+  // Real DOM sizes measured by React Flow; cards are content-driven so the
+  // CARD_* constants are only a first-paint fallback. Without this, elk packs
+  // for the wrong box and rendered cards overlap.
+  sizes?: Map<string, { width: number; height: number }>,
 ) {
   const nodes: Node<FileCardData>[] = []
   for (const id of [...visible].sort()) {
@@ -51,7 +55,7 @@ export async function toReactFlow(
     if (!visible.has(source)) continue
     for (const target of targets) {
       if (!visible.has(target)) continue
-      edges.push({ id: `${source}->${target}`, source, target })
+      edges.push({ id: `${source}->${target}`, source, target, type: 'gradient' })
     }
   }
 
@@ -67,13 +71,15 @@ export async function toReactFlow(
       'elk.direction': 'RIGHT',
       'elk.spacing.nodeNode': '40',
       'elk.layered.spacing.nodeNodeBetweenLayers': '60',
-      'elk.layered.considerModelOrder': 'NODES_AND_EDGES',
     },
-    children: nodes.map((n) => ({
-      id: n.id,
-      width: CARD_WIDTH,
-      height: n.measured?.height ?? CARD_HEIGHT,
-    })),
+    children: nodes.map((n) => {
+      const s = sizes?.get(n.id)
+      return {
+        id: n.id,
+        width: s?.width ?? CARD_WIDTH,
+        height: s?.height ?? n.measured?.height ?? CARD_HEIGHT,
+      }
+    }),
     edges: edges.map((e) => ({
       id: e.id,
       sources: [e.source],

@@ -51,7 +51,7 @@ describe('toReactFlow', () => {
     const { nodes, edges } = await toReactFlow(graph, new Set(['a.ts', 'b.ts']))
 
     expect(nodes.map((n) => n.id).sort()).toEqual(['a.ts', 'b.ts'])
-    expect(edges).toEqual([{ id: 'a.ts->b.ts', source: 'a.ts', target: 'b.ts' }])
+    expect(edges).toEqual([{ id: 'a.ts->b.ts', source: 'a.ts', target: 'b.ts', type: 'gradient' }])
   })
 
   it('includes import and imported-by counts in node data', async () => {

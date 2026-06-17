@@ -6,8 +6,11 @@ import type { ExternalLabel, ExternalLabelType, Graph, GraphNode } from './share
 const LOCAL_TYPES = new Set(['local', 'localmodule'])
 
 export async function buildGraph(root: string, tsconfig?: string): Promise<Graph> {
-  const resolvedTsconfig = tsconfig ?? (fs.existsSync(path.join(root, 'tsconfig.json')) ? path.join(root, 'tsconfig.json') : undefined)
-  const alias = resolvedTsconfig ? tsconfigAlias(resolvedTsconfig) : {}
+  // Explicit --tsconfig wins; otherwise merge paths from every tsconfig in the
+  // project so aliases living in a nested config (e.g. web/tsconfig.json) still
+  // resolve to local edges instead of dropping to inert "unresolved" labels.
+  const tsconfigs = tsconfig ? [tsconfig] : findTsconfigs(root)
+  const alias = Object.assign({}, ...tsconfigs.map(tsconfigAlias))
 
   const options = {
     baseDir: root,
@@ -124,6 +127,19 @@ function classifyExternal(types: string[]): ExternalLabelType {
 
 function sortedUnique(arr: string[]): string[] {
   return [...new Set(arr)].sort()
+}
+
+const IGNORED_DIRS = new Set(['node_modules', 'dist', '.git', 'coverage'])
+
+function findTsconfigs(dir: string, out: string[] = []): string[] {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (!IGNORED_DIRS.has(entry.name)) findTsconfigs(path.join(dir, entry.name), out)
+    } else if (/^tsconfig.*\.json$/.test(entry.name)) {
+      out.push(path.join(dir, entry.name))
+    }
+  }
+  return out
 }
 
 function tsconfigAlias(tsconfigPath: string): Record<string, string> {

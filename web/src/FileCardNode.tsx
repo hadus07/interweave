@@ -39,7 +39,7 @@ export default function FileCardNode({ data }: NodeProps) {
 
   return (
     <div className={`iw-card${sourceExpanded ? ' iw-card--expanded' : ''}`}>
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <button
         type="button"
         className="iw-card-header"
@@ -91,7 +91,7 @@ export default function FileCardNode({ data }: NodeProps) {
           )}
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
     </div>
   )
 }
