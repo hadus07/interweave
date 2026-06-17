@@ -11,19 +11,24 @@ async function main() {
 
   const tsconfigIdx = argv.indexOf('--tsconfig')
   const tsconfig = tsconfigIdx !== -1 ? argv[tsconfigIdx + 1] : undefined
-  const args = argv.filter((_, i) => i !== tsconfigIdx && i !== tsconfigIdx + 1)
+  const args =
+    tsconfigIdx === -1
+      ? argv
+      : argv.filter((_, i) => i !== tsconfigIdx && i !== tsconfigIdx + 1)
 
   const graph = await buildGraph(root, tsconfig)
 
-  const seeds = args
+  const scope = args
     .map((arg) => path.relative(root, path.resolve(root, arg)))
     .map((p) => p.replaceAll('\\', '/'))
     .filter((p) => !p.startsWith('../') && p.length > 0)
 
-  const validSeeds = seeds.filter((p) => graph.nodes[p])
-  const missing = seeds.filter((p) => !graph.nodes[p])
-  for (const p of missing) {
-    console.warn(`Warning: seed not found in graph: ${p}`)
+  // File args auto-open as cards; folder args only scope the tree/palette.
+  const validSeeds = scope.filter((p) => graph.nodes[p])
+  const allPaths = Object.keys(graph.nodes)
+  const inScope = (p: string) => graph.nodes[p] || allPaths.some((n) => n.startsWith(`${p}/`))
+  for (const p of scope.filter((p) => !inScope(p))) {
+    console.warn(`Warning: argument not found in graph: ${p}`)
   }
 
   const portEnv = process.env.INTERWEAVE_PORT
@@ -33,6 +38,9 @@ async function main() {
   const url = new URL('/', `http://127.0.0.1:${port}`)
   if (validSeeds.length > 0) {
     url.searchParams.set('seeds', validSeeds.join(','))
+  }
+  if (scope.length > 0) {
+    url.searchParams.set('scope', scope.join(','))
   }
   console.log(`interweave running at ${url}`)
   if (!process.env.INTERWEAVE_NO_OPEN) {

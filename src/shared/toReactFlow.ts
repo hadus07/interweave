@@ -3,7 +3,6 @@ import type { ExternalLabel, Graph } from './graph.js'
 
 export const CARD_WIDTH = 240
 export const CARD_HEIGHT = 120
-export const CARD_HEIGHT_EXPANDED = 320
 
 export type ExpandDirection = 'imports' | 'importedBy'
 
@@ -13,15 +12,14 @@ export interface FileCardData extends Record<string, unknown> {
   importCount: number
   importedByCount: number
   externals: ExternalLabel[]
-  sourceExpanded?: boolean
   onExpand?(path: string, direction: ExpandDirection): void
-  onToggleSource?(path: string): void
+  onShowSource?(path: string): void
+  onRemove?(path: string): void
 }
 
 export async function toReactFlow(
   graph: Graph,
   visible: Set<string>,
-  sourceExpanded?: Set<string>,
   // Real DOM sizes measured by React Flow; cards are content-driven so the
   // CARD_* constants are only a first-paint fallback. Without this, elk packs
   // for the wrong box and rendered cards overlap.
@@ -34,9 +32,6 @@ export async function toReactFlow(
     const node = graph.nodes[id]
     if (!node) continue
 
-    const isSourceExpanded = sourceExpanded?.has(id) ?? false
-    const height = isSourceExpanded ? CARD_HEIGHT_EXPANDED : CARD_HEIGHT
-
     nodes.push({
       id,
       type: 'fileCard',
@@ -46,9 +41,8 @@ export async function toReactFlow(
         importCount: (graph.forward[id] ?? []).filter((p) => !excluded?.has(p)).length,
         importedByCount: (graph.reverse[id] ?? []).filter((p) => !excluded?.has(p)).length,
         externals: graph.external[id] ?? [],
-        sourceExpanded: isSourceExpanded,
       },
-      measured: { width: CARD_WIDTH, height },
+      measured: { width: CARD_WIDTH, height: CARD_HEIGHT },
     })
   }
 
@@ -70,9 +64,16 @@ export async function toReactFlow(
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
-      'elk.direction': 'RIGHT',
+      // LEFT so a node's imports render to its left (imports chip side) and its
+      // importers to its right (imported-by chip side) — edges leave from the
+      // matching chip, less crossing over the card.
+      'elk.direction': 'LEFT',
       'elk.spacing.nodeNode': '40',
       'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+      // Honor the (alphabetical) input order within each layer instead of
+      // letting elk reshuffle to minimize crossings — keeps cards in a stable
+      // vertical order so the hierarchy doesn't jump around on each expansion.
+      'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
     },
     children: nodes.map((n) => {
       const s = sizes?.get(n.id)

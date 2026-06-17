@@ -1,5 +1,5 @@
 import { Handle, type NodeProps, Position } from '@xyflow/react'
-import { useEffect, useState } from 'react'
+import { ArrowDownRight, ArrowUpLeft, Code2, X } from 'lucide-react'
 import type { FileCardData } from '~shared/toReactFlow'
 
 const extClass: Record<string, string> = {
@@ -9,46 +9,38 @@ const extClass: Record<string, string> = {
 }
 
 export default function FileCardNode({ data }: NodeProps) {
-  const { name, path, importCount, importedByCount, externals, sourceExpanded, onExpand, onToggleSource } =
+  const { name, path, importCount, importedByCount, externals, onExpand, onShowSource, onRemove } =
     data as Required<FileCardData>
 
-  const [sourceHtml, setSourceHtml] = useState<string | null>(null)
-  const [sourceStatus, setSourceStatus] = useState<'idle' | 'loading' | 'error'>('idle')
-
-  useEffect(() => {
-    if (!sourceExpanded) {
-      setSourceHtml(null)
-      setSourceStatus('idle')
-      return
-    }
-    setSourceStatus('loading')
-    fetch(`/file?path=${encodeURIComponent(path)}`)
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.text()
-      })
-      .then((html) => {
-        setSourceHtml(html)
-        setSourceStatus('idle')
-      })
-      .catch((err) => {
-        console.error('failed to load source', err)
-        setSourceStatus('error')
-      })
-  }, [sourceExpanded, path])
-
   return (
-    <div className={`iw-card${sourceExpanded ? ' iw-card--expanded' : ''}`}>
-      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
-      <button
-        type="button"
-        className="iw-card-header"
-        onClick={() => onToggleSource(path)}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <div className="iw-card-name">{name}</div>
-        <div className="iw-card-path">{path}</div>
-      </button>
+    <div className="iw-card">
+      <Handle type="source" position={Position.Left} style={{ opacity: 0 }} />
+      <div className="iw-card-header">
+        <div className="iw-card-heading">
+          <div className="iw-card-name">{name}</div>
+          <div className="iw-card-path">{path}</div>
+        </div>
+        <div className="iw-card-actions">
+          <button
+            type="button"
+            className="iw-card-action"
+            title="View source"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onShowSource(path)}
+          >
+            <Code2 size={14} />
+          </button>
+          <button
+            type="button"
+            className="iw-card-action iw-card-action--remove"
+            title="Remove from canvas"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onRemove(path)}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
       <div className="iw-chip-row">
         <button
           type="button"
@@ -56,7 +48,7 @@ export default function FileCardNode({ data }: NodeProps) {
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onExpand(path, 'imports')}
         >
-          ↗ imports {importCount}
+          <ArrowUpLeft size={12} /> imports {importCount}
         </button>
         <button
           type="button"
@@ -64,7 +56,7 @@ export default function FileCardNode({ data }: NodeProps) {
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onExpand(path, 'importedBy')}
         >
-          ↙ imported by {importedByCount}
+          imported by {importedByCount} <ArrowDownRight size={12} />
         </button>
       </div>
       {externals.length > 0 && (
@@ -80,18 +72,7 @@ export default function FileCardNode({ data }: NodeProps) {
           ))}
         </div>
       )}
-      {sourceExpanded && (
-        // nowheel: lets trackpad scroll the code instead of panning the canvas
-        <div className="iw-source-panel nowheel">
-          {sourceStatus === 'loading' && <div className="iw-source-loading">loading…</div>}
-          {sourceStatus === 'error' && <div className="iw-source-error">failed to load source</div>}
-          {sourceHtml != null && (
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: server returns trusted Shiki-highlighted HTML
-            <div dangerouslySetInnerHTML={{ __html: sourceHtml }} />
-          )}
-        </div>
-      )}
-      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Right} style={{ opacity: 0 }} />
     </div>
   )
 }

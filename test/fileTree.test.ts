@@ -21,6 +21,13 @@ describe('buildTree', () => {
     ])
   })
 
+  it('collapses single-child folder chains into one item', () => {
+    const tree = buildTree(['src/shared/graph.ts', 'src/shared/toReactFlow.ts'])
+    expect(tree.length).toBe(1)
+    expect([tree[0].name, tree[0].path]).toEqual(['src/shared', 'src/shared'])
+    expect(tree[0].children.map((n) => n.name)).toEqual(['graph.ts', 'toReactFlow.ts'])
+  })
+
   it('lists every file under a folder, recursively', () => {
     const tree = buildTree(['src/a.ts', 'src/sub/b.ts', 'src/sub/deep/c.ts'])
     expect(descendantFiles(tree[0]).sort()).toEqual([

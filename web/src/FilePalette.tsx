@@ -1,18 +1,27 @@
 import { Command } from 'cmdk'
-import type { Graph } from '~shared/graph'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
-  graph: Graph
+  paths: string[]
   excluded: Set<string>
   open: boolean
   onClose: () => void
   onSelect: (path: string) => void
 }
 
-export default function FilePalette({ graph, excluded, open, onClose, onSelect }: Props) {
+export default function FilePalette({ paths: allPaths, excluded, open, onClose, onSelect }: Props) {
+  const [query, setQuery] = useState('')
+  const listRef = useRef<HTMLDivElement>(null)
+
+  // cmdk keeps the active item in view, which scrolls the list down as results
+  // reorder while typing. Snap back to the top on every query change.
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = 0
+  }, [query])
+
   if (!open) return null
 
-  const paths = Object.keys(graph.nodes).filter((p) => !excluded.has(p))
+  const paths = allPaths.filter((p) => !excluded.has(p))
 
   function handleSelect(path: string) {
     onSelect(path)
@@ -29,9 +38,11 @@ export default function FilePalette({ graph, excluded, open, onClose, onSelect }
             autoFocus
             placeholder="search files…"
             className="iw-palette-input"
+            value={query}
+            onValueChange={setQuery}
             onKeyDown={(e) => e.key === 'Escape' && onClose()}
           />
-          <Command.List className="iw-palette-list">
+          <Command.List ref={listRef} className="iw-palette-list">
             <Command.Empty className="iw-palette-empty">no files found</Command.Empty>
             {paths.map((p) => {
               const name = p.split('/').pop() ?? p

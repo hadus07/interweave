@@ -2,8 +2,21 @@ import fs from 'node:fs/promises'
 import http from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import open from 'open'
 import { getSingletonHighlighter } from 'shiki'
 import type { Graph } from './shared/graph.js'
+
+// The one real security boundary: confine a request path to inside `root`.
+// Returns the resolved real path, or null if it escapes (reject as 403).
+async function resolveInside(root: string, decodedPath: string): Promise<string | null> {
+  if (path.isAbsolute(decodedPath)) return null
+  const rootResolved = path.resolve(root)
+  const requested = path.resolve(rootResolved, decodedPath)
+  if (requested !== rootResolved && !requested.startsWith(rootResolved + path.sep)) return null
+  const real = await fs.realpath(requested).catch(() => requested)
+  if (real !== rootResolved && !real.startsWith(rootResolved + path.sep)) return null
+  return real
+}
 
 const defaultAssetsUrl = new URL('./web/', import.meta.url)
 
@@ -55,30 +68,33 @@ export function startServer(
       return
     }
 
+    if (url.pathname === '/open' && req.method === 'GET') {
+      const decodedPath = decodeURIComponent(url.searchParams.get('path') ?? '')
+      const real = await resolveInside(graph.root, decodedPath)
+      if (!real) {
+        res.writeHead(403)
+        res.end('Forbidden')
+        return
+      }
+      try {
+        // ponytail: opens in the OS default app for the file type; if that's not
+        // the user's editor, this is where an explicit `code`/$EDITOR call goes.
+        await open(real)
+        res.writeHead(204)
+        res.end()
+      } catch {
+        res.writeHead(500)
+        res.end('Failed to open')
+      }
+      return
+    }
+
     if (url.pathname === '/file' && req.method === 'GET') {
       const rawPath = url.searchParams.get('path') ?? ''
       const decodedPath = decodeURIComponent(rawPath)
 
-      if (path.isAbsolute(decodedPath)) {
-        res.writeHead(403)
-        res.end('Forbidden')
-        return
-      }
-
-      const rootResolved = path.resolve(graph.root)
-      const requested = path.resolve(rootResolved, decodedPath)
-      const isInside = requested === rootResolved || requested.startsWith(rootResolved + path.sep)
-
-      if (!isInside) {
-        res.writeHead(403)
-        res.end('Forbidden')
-        return
-      }
-
-      const real = await fs.realpath(requested).catch(() => requested)
-      const realInside = real === rootResolved || real.startsWith(rootResolved + path.sep)
-
-      if (!realInside) {
+      const real = await resolveInside(graph.root, decodedPath)
+      if (!real) {
         res.writeHead(403)
         res.end('Forbidden')
         return

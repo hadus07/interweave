@@ -103,7 +103,6 @@ describe('toReactFlow', () => {
       graph,
       new Set(['a.ts', 'b.ts', 'c.ts']),
       undefined,
-      undefined,
       new Set(['b.ts']),
     )
 
@@ -115,8 +114,8 @@ describe('toReactFlow', () => {
   it('stays deterministic and overlap-free with an excluded set', async () => {
     const visible = new Set(['a.ts', 'b.ts', 'c.ts'])
     const excluded = new Set(['b.ts'])
-    const first = await toReactFlow(graph, visible, undefined, undefined, excluded)
-    const second = await toReactFlow(graph, visible, undefined, undefined, excluded)
+    const first = await toReactFlow(graph, visible, undefined, excluded)
+    const second = await toReactFlow(graph, visible, undefined, excluded)
 
     const pos = (r: typeof first) =>
       r.nodes.map((n) => ({ id: n.id, x: n.position.x, y: n.position.y }))

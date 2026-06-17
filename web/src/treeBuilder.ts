@@ -27,7 +27,18 @@ export function buildTree(paths: string[]): TreeNode[] {
   }
 
   sort(root)
-  return root.children
+  return root.children.map(collapse)
+}
+
+// Merge folder-only single-child chains (a > b > file → "a/b"), so a scoped
+// nested folder shows as one rooted item instead of its ancestor chain.
+function collapse(node: TreeNode): TreeNode {
+  const children = node.children.map(collapse)
+  if (!node.isFile && children.length === 1 && !children[0].isFile) {
+    const only = children[0]
+    return { name: `${node.name}/${only.name}`, path: only.path, isFile: false, children: only.children }
+  }
+  return { ...node, children }
 }
 
 // Folders first, then files; alpha within each group.
