@@ -36,7 +36,12 @@ function collapse(node: TreeNode): TreeNode {
   const children = node.children.map(collapse)
   if (!node.isFile && children.length === 1 && !children[0].isFile) {
     const only = children[0]
-    return { name: `${node.name}/${only.name}`, path: only.path, isFile: false, children: only.children }
+    return {
+      name: `${node.name}/${only.name}`,
+      path: only.path,
+      isFile: false,
+      children: only.children,
+    }
   }
   return { ...node, children }
 }

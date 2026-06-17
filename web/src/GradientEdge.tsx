@@ -31,7 +31,7 @@ function GradientEdge({
         strokeWidth: 1.2,
         filter: 'drop-shadow(0 0 3px var(--iw-accent-glow))',
       }
-    : { stroke: 'var(--iw-edge)', strokeWidth: 1, }
+    : { stroke: 'var(--iw-edge)', strokeWidth: 1 }
   return (
     <>
       {active && (

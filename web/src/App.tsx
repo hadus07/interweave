@@ -18,22 +18,17 @@ import {
   PanelResizeHandle,
 } from 'react-resizable-panels'
 import type { Graph } from '~shared/graph'
-import type { ExpandDirection, FileCardData } from '~shared/toReactFlow'
+import type { FileCardData } from '~shared/toReactFlow'
 import { CARD_HEIGHT, toReactFlow } from '~shared/toReactFlow'
 import FileCardNode from './FileCardNode'
 import FilePalette from './FilePalette'
 import FileTree from './FileTree'
 import GradientEdge from './GradientEdge'
 import SourcePanel from './SourcePanel'
+import { useGraphView } from './useGraphView'
 
 const nodeTypes = { fileCard: FileCardNode }
 const edgeTypes = { gradient: GradientEdge }
-
-function readSeeds(): Set<string> {
-  const params = new URLSearchParams(window.location.search)
-  const raw = params.get('seeds')
-  return raw ? new Set(raw.split(',')) : new Set<string>()
-}
 
 // Folder/file args that restrict which paths the tree + palette list.
 const SCOPE = (() => {
@@ -44,13 +39,20 @@ const SCOPE = (() => {
 const inScope = (p: string) =>
   SCOPE.length === 0 || SCOPE.some((s) => p === s || p.startsWith(`${s}/`))
 
-const excludedKey = (root: string) => `interweave:excluded:${root}`
-
 export default function App() {
   const [graph, setGraph] = useState<Graph | null>(null)
-  const [expanded, setExpanded] = useState<Set<string>>(readSeeds)
-  const [sourcePath, setSourcePath] = useState<string | null>(null)
-  const [excluded, setExcluded] = useState<Set<string>>(new Set())
+  const {
+    expanded,
+    excluded,
+    sourcePath,
+    expand,
+    seed,
+    showSource,
+    hideSource,
+    remove,
+    setExclusion,
+    clear,
+  } = useGraphView(graph)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const panelRef = useRef<ImperativePanelHandle>(null)
   const { fitView, setCenter } = useReactFlow()
@@ -60,19 +62,18 @@ export default function App() {
   useEffect(() => {
     fetch('/graph')
       .then((r) => r.json())
-      .then((g: Graph) => {
-        setGraph(g)
-        const saved = localStorage.getItem(excludedKey(g.root))
-        if (saved) setExcluded(new Set(JSON.parse(saved)))
-      })
+      .then(setGraph)
       .catch((err) => console.error('failed to load graph', err))
   }, [])
 
-  // Persist exclusions per project. graph.root keys it so projects don't collide.
-  useEffect(() => {
-    if (!graph) return
-    localStorage.setItem(excludedKey(graph.root), JSON.stringify([...excluded]))
-  }, [excluded, graph])
+  // Queues focus, then adds to the visible set; focus centering lives in App.
+  const seedAndFocus = useCallback(
+    (path: string) => {
+      focusRef.current = path
+      seed(path)
+    },
+    [seed],
+  )
 
   const toggleSidebar = useCallback(() => {
     const panel = panelRef.current
@@ -95,51 +96,6 @@ export default function App() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [toggleSidebar])
-
-  const expand = useCallback(
-    (path: string, direction: ExpandDirection) => {
-      if (!graph) return
-      setExpanded((prev) => {
-        const next = new Set(prev)
-        const related = direction === 'imports' ? graph.forward[path] : graph.reverse[path]
-        for (const target of related ?? []) if (!excluded.has(target)) next.add(target)
-        return next
-      })
-    },
-    [graph, excluded],
-  )
-
-  const showSource = useCallback((path: string) => setSourcePath(path), [])
-
-  const setExclusion = useCallback((files: string[], exclude: boolean) => {
-    setExcluded((prev) => {
-      const next = new Set(prev)
-      for (const f of files) {
-        if (exclude) next.add(f)
-        else next.delete(f)
-      }
-      return next
-    })
-  }, [])
-
-  const seed = useCallback((path: string) => {
-    focusRef.current = path
-    setExpanded((prev) => new Set([...prev, path]))
-  }, [])
-
-  const clearCanvas = useCallback(() => {
-    setExpanded(new Set())
-    setSourcePath(null)
-  }, [])
-
-  const remove = useCallback((path: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      next.delete(path)
-      return next
-    })
-    setSourcePath((prev) => (prev === path ? null : prev))
-  }, [])
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FileCardData>>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -239,7 +195,7 @@ export default function App() {
           excluded={excluded}
           activePath={selectedPath}
           onSetExcluded={setExclusion}
-          onSeed={seed}
+          onSeed={seedAndFocus}
         />
       </Panel>
       <PanelResizeHandle className="iw-resize-handle" />
@@ -261,12 +217,7 @@ export default function App() {
           >
             <Search size={15} />
           </button>
-          <button
-            type="button"
-            className="iw-clear-canvas"
-            title="Clear canvas"
-            onClick={clearCanvas}
-          >
+          <button type="button" className="iw-clear-canvas" title="Clear canvas" onClick={clear}>
             <Trash2 size={15} />
           </button>
           <ReactFlow
@@ -278,7 +229,12 @@ export default function App() {
             edgeTypes={edgeTypes}
             fitView
           >
-            <Background variant={BackgroundVariant.Dots} color="var(--iw-border)" gap={24} size={1} />
+            <Background
+              variant={BackgroundVariant.Dots}
+              color="var(--iw-border)"
+              gap={24}
+              size={1}
+            />
             <Controls />
           </ReactFlow>
         </div>
@@ -287,7 +243,7 @@ export default function App() {
         <>
           <PanelResizeHandle className="iw-resize-handle" />
           <Panel defaultSize={32} minSize={18} style={{ overflow: 'hidden' }}>
-            <SourcePanel path={sourcePath} onClose={() => setSourcePath(null)} />
+            <SourcePanel path={sourcePath} onClose={hideSource} />
           </Panel>
         </>
       )}
@@ -296,7 +252,7 @@ export default function App() {
         excluded={excluded}
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
-        onSelect={seed}
+        onSelect={seedAndFocus}
       />
     </PanelGroup>
   )

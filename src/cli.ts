@@ -12,9 +12,7 @@ async function main() {
   const tsconfigIdx = argv.indexOf('--tsconfig')
   const tsconfig = tsconfigIdx !== -1 ? argv[tsconfigIdx + 1] : undefined
   const args =
-    tsconfigIdx === -1
-      ? argv
-      : argv.filter((_, i) => i !== tsconfigIdx && i !== tsconfigIdx + 1)
+    tsconfigIdx === -1 ? argv : argv.filter((_, i) => i !== tsconfigIdx && i !== tsconfigIdx + 1)
 
   const graph = await buildGraph(root, tsconfig)
 
