@@ -29,9 +29,9 @@ function GradientEdge({
     ? {
         stroke: `url(#g-${id})`,
         strokeWidth: 1.2,
-        filter: 'drop-shadow(0 0 3px rgba(108, 92, 231, 0.45))',
+        filter: 'drop-shadow(0 0 3px var(--iw-accent-glow))',
       }
-    : { stroke: '#4e526d', strokeWidth: 1, }
+    : { stroke: 'var(--iw-edge)', strokeWidth: 1, }
   return (
     <>
       {active && (
@@ -44,8 +44,8 @@ function GradientEdge({
             x2={targetX}
             y2={targetY}
           >
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#38bdf8" />
+            <stop offset="0%" style={{ stopColor: 'var(--iw-edge-from)' }} />
+            <stop offset="100%" style={{ stopColor: 'var(--iw-edge-to)' }} />
           </linearGradient>
         </defs>
       )}

@@ -278,7 +278,7 @@ export default function App() {
             edgeTypes={edgeTypes}
             fitView
           >
-            <Background variant={BackgroundVariant.Dots} color="#1a1c2c" gap={24} size={1} />
+            <Background variant={BackgroundVariant.Dots} color="var(--iw-border)" gap={24} size={1} />
             <Controls />
           </ReactFlow>
         </div>
