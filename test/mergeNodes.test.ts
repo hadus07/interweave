@@ -1,6 +1,6 @@
 import type { Node } from '@xyflow/react'
 import { describe, expect, it } from 'vitest'
-import type { FileCardData } from '../src/shared/toReactFlow.js'
+import type { FileCardData } from '../src/shared/canvas.js'
 import { mergeNodes } from '../web/src/mergeNodes.js'
 
 const handlers = {
@@ -36,6 +36,17 @@ describe('mergeNodes', () => {
 
     expect(byId['a.ts'].position.x).toBe(100) // preserved
     expect(byId['b.ts'].position.x).toBe(50) // new node, fresh layout
+  })
+
+  it('seeds new nodes near the expand anchor when one is given', () => {
+    const prev = [node('a.ts', 100)] // anchor card sits at x:100
+    const next = [node('a.ts', 0), node('b.ts', 0), node('c.ts', 0)] // b,c freshly at origin
+    const byId = Object.fromEntries(mergeNodes(prev, next, handlers, 'a.ts').map((n) => [n.id, n]))
+
+    expect(byId['a.ts'].position.x).toBe(100) // survivor preserved
+    // new nodes fan out from the anchor, not the origin
+    expect(byId['b.ts'].position.x).toBeGreaterThan(100)
+    expect(byId['c.ts'].position.x).toBeGreaterThan(byId['b.ts'].position.x)
   })
 
   it('injects the card handlers into every node', () => {

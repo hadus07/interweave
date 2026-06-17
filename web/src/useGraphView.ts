@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
+import type { ExpandDirection } from '~shared/canvas'
 import type { Graph } from '~shared/graph'
-import type { ExpandDirection } from '~shared/toReactFlow'
 import { type GraphViewState, graphView } from './graphView'
 
 const excludedKey = (root: string) => `interweave:excluded:${root}`

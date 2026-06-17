@@ -18,7 +18,7 @@ _Avoid_: canvas state, view model.
 
 **Visible set**:
 The paths currently shown as cards (`expanded`). Membership only — independent
-of exclusion. Consumed by `toReactFlow(graph, visible)`.
+of exclusion. Consumed by `projectGraph(graph, visible)`.
 _Avoid_: open files, shown nodes.
 
 **Exclusion**:

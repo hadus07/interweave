@@ -1,7 +1,7 @@
 import { Handle, type NodeProps, Position } from '@xyflow/react'
 import { ArrowDownRight, ArrowUpLeft, Code2, X } from 'lucide-react'
 import { memo } from 'react'
-import type { FileCardData } from '~shared/toReactFlow'
+import type { FileCardData } from '~shared/canvas'
 
 const extClass: Record<string, string> = {
   npm: 'iw-ext-npm',

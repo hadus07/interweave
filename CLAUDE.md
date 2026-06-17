@@ -23,7 +23,7 @@ The whole tool is four units with clean seams — keep logic in these, not in gl
 
 - **`buildGraph`** (`src/`) — runs dependency-cruiser **once** over cwd, returns a normalized in-memory graph: local-file nodes, forward edges (imports), reverse edges (inverted forward = imported-by), per-node external labels (npm/core/unresolved). dependency-cruiser is configured to **not follow `node_modules`**. The graph is a **startup snapshot**; edges are never recomputed during a session.
 - **HTTP server** (`src/`, Node built-in `http`) — serves prebuilt frontend assets plus two routes: `GET /graph` returns the normalized graph as JSON; `GET /file?path=<relative>` reads the file **live from disk** and returns **server-side Shiki-highlighted HTML**. The `/file` handler confines `path` to within the scanned project dir and rejects anything resolving outside it.
-- **Shared graph contract + `toReactFlow`** (`src/shared/`) — the graph type and the pure `(graph, visibleSet) → positioned nodes/edges` transform. Slice 01 uses a simple deterministic layout; elkjs replaces it later.
+- **Shared graph contract + canvas transform** (`src/shared/`) — the graph type and two seams in `canvas.ts`: pure `projectGraph(graph, visible, excluded) → nodes/edges` (no positions, no elk), and async `layout(nodes, edges, sizes) → positioned nodes` (elk, dynamically imported). The frontend projects synchronously, then lays out once it has measured sizes.
 - **Frontend** (`web/`, Vite + React + `@xyflow/react`) — the canvas. Custom node component per card. Carries **no** highlighting dependency; it injects the HTML `/file` returns. Layout re-runs on each expansion, anchoring new nodes near the expanded card.
 
 Why a whole-project up-front scan: reverse edges ("imported by") can't be computed
@@ -48,9 +48,9 @@ go stale (restart to refresh them).
 ## Testing approach
 
 Assert external behavior at the highest seam; never test dependency-cruiser/Shiki/React
-Flow/elkjs internals. Three seams: `buildGraph` (graph shape against fixtures), HTTP API
-(`/graph` JSON + `/file` highlight + traversal rejection), `toReactFlow` (pure
-nodes/edges, no overlaps, deterministic). Fixtures are real throwaway projects under
+Flow/elkjs internals. Seams: `buildGraph` (graph shape against fixtures), HTTP API
+(`/graph` JSON + `/file` highlight + traversal rejection), `projectGraph` (pure
+nodes/edges, counts net of exclusion), `layout` (no overlaps, deterministic). Fixtures are real throwaway projects under
 `test/fixtures/<case>/` (`relative-imports/`, `ts-aliases/`, `cycle/`, `external-deps/`).
 Chip expansion, fuzzy palette, pan/zoom, and visual highlight correctness are manual in v1.
 

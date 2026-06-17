@@ -1,5 +1,5 @@
+import type { ExpandDirection } from '~shared/canvas'
 import type { Graph } from '~shared/graph'
-import type { ExpandDirection } from '~shared/toReactFlow'
 
 export interface GraphViewState {
   expanded: Set<string>

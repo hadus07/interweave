@@ -17,15 +17,14 @@ export interface FileCardData extends Record<string, unknown> {
   onRemove?(path: string): void
 }
 
-export async function toReactFlow(
+// Pure projection: graph + visible set (minus excluded) → React Flow nodes/edges.
+// No positions (all 0,0) and no elk — layout() owns geometry. Counts are net of
+// exclusion so a card's chips reflect only what's currently on the canvas.
+export function projectGraph(
   graph: Graph,
   visible: Set<string>,
-  // Real DOM sizes measured by React Flow; cards are content-driven so the
-  // CARD_* constants are only a first-paint fallback. Without this, elk packs
-  // for the wrong box and rendered cards overlap.
-  sizes?: Map<string, { width: number; height: number }>,
   excluded?: Set<string>,
-) {
+): { nodes: Node<FileCardData>[]; edges: Edge[] } {
   const nodes: Node<FileCardData>[] = []
   for (const id of [...visible].sort()) {
     if (excluded?.has(id)) continue
@@ -55,11 +54,23 @@ export async function toReactFlow(
     }
   }
 
-  if (nodes.length === 0) return { nodes, edges }
+  return { nodes, edges }
+}
+
+// Geometry-only seam: position the given nodes with elk and return them with
+// positions filled. elk is dynamically imported so the pure projection path
+// never pays its cost. `sizes` are the real DOM sizes React Flow measured;
+// cards are content-driven so the CARD_* constants are only a first-paint
+// fallback — without measured sizes elk packs for the wrong box and cards overlap.
+export async function layout(
+  nodes: Node<FileCardData>[],
+  edges: Edge[],
+  sizes?: Map<string, { width: number; height: number }>,
+): Promise<Node<FileCardData>[]> {
+  if (nodes.length === 0) return nodes
 
   const { default: ELK } = await import('elkjs/lib/elk.bundled.js')
   const elk = new ELK()
-  const nodeById = new Map(nodes.map((n) => [n.id, n]))
   const elkGraph = {
     id: 'root',
     layoutOptions: {
@@ -90,13 +101,7 @@ export async function toReactFlow(
     })),
   }
 
-  const layout = await elk.layout(elkGraph)
-  for (const child of layout.children ?? []) {
-    const node = nodeById.get(child.id)
-    if (node) {
-      node.position = { x: child.x ?? 0, y: child.y ?? 0 }
-    }
-  }
-
-  return { nodes, edges }
+  const result = await elk.layout(elkGraph)
+  const posById = new Map((result.children ?? []).map((c) => [c.id, { x: c.x ?? 0, y: c.y ?? 0 }]))
+  return nodes.map((n) => ({ ...n, position: posById.get(n.id) ?? n.position }))
 }

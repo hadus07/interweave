@@ -1,10 +1,16 @@
 import { type Edge, type Node, useEdgesState, useNodesState, useReactFlow } from '@xyflow/react'
 import { useCallback, useEffect, useRef } from 'react'
+import {
+  CARD_HEIGHT,
+  type ExpandDirection,
+  type FileCardData,
+  layout,
+  projectGraph,
+} from '~shared/canvas'
 import type { Graph } from '~shared/graph'
-import { CARD_HEIGHT, type FileCardData, toReactFlow } from '~shared/toReactFlow'
 import { type CardHandlers, mergeNodes } from './mergeNodes'
 
-// Owns the canvas layout lifecycle: build → measure → re-layout → fit, plus
+// Owns the canvas layout lifecycle: project → measure → layout → fit, plus
 // focus-centering. App only renders the result and queues focus targets.
 export function useCanvasLayout(
   graph: Graph | null,
@@ -17,19 +23,32 @@ export function useCanvasLayout(
   const { fitView, setCenter } = useReactFlow()
   // Path queued by the sidebar/palette to select + center once it's laid out.
   const focusRef = useRef<string | null>(null)
+  // Path of the card last expanded; pass 1 seeds its new neighbours nearby, then
+  // clears it so a later seed/palette add doesn't reuse a stale anchor.
+  const anchorRef = useRef<string | null>(null)
   const laidOutSig = useRef('')
 
-  // Pass 1 — node/edge existence + data. Preserves prior position and measured
-  // size for surviving nodes so an expand doesn't reset the laid-out canvas.
+  // Record the expansion anchor before forwarding, so the next projection knows
+  // which card the new neighbours should emerge from.
+  const handleExpand = useCallback(
+    (path: string, direction: ExpandDirection) => {
+      anchorRef.current = path
+      onExpand?.(path, direction)
+    },
+    [onExpand],
+  )
+
+  // Pass 1 — node/edge existence + data (pure, no elk). Preserves prior position
+  // and measured size for surviving nodes; seeds new ones near the expand anchor.
   useEffect(() => {
     if (!graph) return
-    toReactFlow(graph, expanded, undefined, excluded)
-      .then(({ nodes: layoutNodes, edges: layoutEdges }) => {
-        setNodes((prev) => mergeNodes(prev, layoutNodes, { onExpand, onShowSource, onRemove }))
-        setEdges(layoutEdges)
-      })
-      .catch((err) => console.error('layout failed', err))
-  }, [graph, expanded, excluded, onExpand, onShowSource, onRemove, setNodes, setEdges])
+    const { nodes: projected, edges: projectedEdges } = projectGraph(graph, expanded, excluded)
+    const anchorPath = anchorRef.current
+    anchorRef.current = null
+    const handlers: CardHandlers = { onExpand: handleExpand, onShowSource, onRemove }
+    setNodes((prev) => mergeNodes(prev, projected, handlers, anchorPath))
+    setEdges(projectedEdges)
+  }, [graph, expanded, excluded, handleExpand, onShowSource, onRemove, setNodes, setEdges])
 
   // Pass 2 — re-layout with the sizes React Flow actually measured, so cards
   // never overlap regardless of external rows or expanded source length.
@@ -47,14 +66,14 @@ export function useCanvasLayout(
       .join('|')
     if (sig === laidOutSig.current) return
     laidOutSig.current = sig
-    toReactFlow(graph, expanded, sizes, excluded)
-      .then(({ nodes: laid }) => {
+    layout(nodes, edges, sizes)
+      .then((laid) => {
         const pos = new Map(laid.map((n) => [n.id, n.position]))
         setNodes((prev) => prev.map((n) => ({ ...n, position: pos.get(n.id) ?? n.position })))
         fitView({ padding: 0.2, duration: 300 })
       })
       .catch((err) => console.error('layout failed', err))
-  }, [nodes, graph, expanded, excluded, setNodes, fitView])
+  }, [nodes, edges, graph, setNodes, fitView])
 
   // Focus — once the queued node exists and is measured, select it (others
   // deselected) and center the viewport on it.
