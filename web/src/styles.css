@@ -92,6 +92,20 @@ body {
   letter-spacing: 0.05em;
 }
 
+.iw-empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 5;
+  padding: 24px;
+  font-family: "JetBrains Mono", "Menlo", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--iw-text-muted);
+  text-align: center;
+}
+
 /* ── Sidebar file tree ─────────────────────────────── */
 
 .iw-sidebar {

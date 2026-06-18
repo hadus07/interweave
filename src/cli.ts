@@ -1,12 +1,26 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import open from 'open'
 import { buildGraph } from './buildGraph.js'
 import { startServer } from './server.js'
 
+function parseRootArg(args: string[], cwd: string): { root: string; scopeArgs: string[] } {
+  const first = args[0]
+  if (!first || !path.isAbsolute(first)) return { root: cwd, scopeArgs: args }
+  const resolved = path.resolve(first)
+  try {
+    const stat = fs.statSync(resolved)
+    if (stat.isDirectory()) return { root: resolved, scopeArgs: args.slice(1) }
+    const dir = path.dirname(resolved)
+    return { root: dir, scopeArgs: [path.relative(dir, resolved), ...args.slice(1)] }
+  } catch {
+    return { root: cwd, scopeArgs: args }
+  }
+}
+
 async function main() {
   const cwd = process.cwd()
-  const root = process.env.INTERWEAVE_ROOT ?? cwd
   const argv = process.argv.slice(2)
 
   const tsconfigIdx = argv.indexOf('--tsconfig')
@@ -14,9 +28,12 @@ async function main() {
   const args =
     tsconfigIdx === -1 ? argv : argv.filter((_, i) => i !== tsconfigIdx && i !== tsconfigIdx + 1)
 
+  const envRoot = process.env.INTERWEAVE_ROOT
+  const { root, scopeArgs } = parseRootArg(args, envRoot ? path.resolve(envRoot) : cwd)
+
   const graph = await buildGraph(root, tsconfig)
 
-  const scope = args
+  const scope = scopeArgs
     .map((arg) => path.relative(root, path.resolve(root, arg)))
     .map((p) => p.replaceAll('\\', '/'))
     .filter((p) => !p.startsWith('../') && p.length > 0)

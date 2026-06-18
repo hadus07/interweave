@@ -9,6 +9,7 @@ export default defineConfig({
   clean: true,
   splitting: false,
   bundle: true,
+  external: ['dependency-cruiser', 'typescript'],
   banner: {
     js: '#!/usr/bin/env node',
   },

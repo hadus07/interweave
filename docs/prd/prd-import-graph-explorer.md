@@ -31,7 +31,7 @@ matters and following dependencies in either direction, with the code in front o
 
 1. As a developer, I want to install the tool globally via npm, so that I can run it in any project without per-project setup.
 2. As a developer, I want to run a single command inside a project directory, so that I can start exploring without configuration.
-3. As a developer, I want to pass one or more file paths as CLI arguments, so that those files open as my initial cards.
+3. As a developer, I want to pass an optional project directory followed by one or more file paths as CLI arguments, so that I can point the tool at any project on disk and have those files open as my initial cards.
 4. As a developer, I want to run the tool with no arguments and get an empty canvas with a fuzzy file-search palette, so that I can pick my starting file interactively.
 5. As a developer, I want a `Cmd-K`-style fuzzy search available at any time, so that I can add additional root cards after I've started.
 6. As a developer, I want the tool to open my browser automatically, so that I don't have to copy a URL.
@@ -97,7 +97,7 @@ matters and following dependencies in either direction, with the code in front o
 - Expansion is **chip-driven** for v1 ("expand by some other means"); clicking the literal import line inside the code is explicitly deferred.
 
 **Seeding**
-- CLI accepts optional file-path arguments that become the initial cards.
+- CLI accepts an optional project directory as the first positional argument. If omitted, the current working directory is used. Remaining positional arguments are file-path scopes/seeds relative to that project root.
 - With no arguments, the canvas opens empty with a fuzzy file-search palette (the full file list comes from the graph). The same palette adds further root cards mid-session.
 - No entry-point guessing from `package.json` or elsewhere.
 
