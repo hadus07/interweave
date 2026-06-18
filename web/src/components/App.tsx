@@ -101,23 +101,24 @@ export default function App() {
         collapsedSize={0}
         defaultSize={18}
         minSize={10}
-        className="iw-sidebar"
-        style={{ overflow: 'auto' }}
+        className="bg-sidebar border-r border-border font-mono text-[12px] text-text"
       >
-        <FileTree
-          paths={scopedPaths}
-          excluded={excluded}
-          activePath={selectedPath}
-          onSetExcluded={setExclusion}
-          onSeed={focusOn}
-        />
+        <div className="h-full overflow-auto">
+          <FileTree
+            paths={scopedPaths}
+            excluded={excluded}
+            activePath={selectedPath}
+            onSetExcluded={setExclusion}
+            onSeed={focusOn}
+          />
+        </div>
       </Panel>
-      <PanelResizeHandle className="iw-resize-handle" />
+      <PanelResizeHandle className="w-px bg-border transition-colors duration-120 hover:bg-accent data-[resize-handle-state=drag]:bg-accent" />
       <Panel>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
           <button
             type="button"
-            className="iw-collapse-toggle"
+            className="absolute top-3 left-2 z-5 inline-flex items-center justify-center w-7 h-7 p-0 border border-strong rounded-md bg-elevated text-muted cursor-pointer transition-colors duration-120 hover:text-accent-hover hover:border-accent"
             title="Toggle sidebar (⌘B)"
             onClick={toggleSidebar}
           >
@@ -125,17 +126,22 @@ export default function App() {
           </button>
           <button
             type="button"
-            className="iw-search-btn"
+            className="absolute top-3 left-11 z-5 inline-flex items-center justify-center w-7 h-7 p-0 border border-strong rounded-md bg-elevated text-muted cursor-pointer transition-colors duration-120 hover:text-accent-hover hover:border-accent"
             title="Search files (⌘K)"
             onClick={() => setPaletteOpen(true)}
           >
             <Search size={15} />
           </button>
-          <button type="button" className="iw-clear-canvas" title="Clear canvas" onClick={clear}>
+          <button
+            type="button"
+            className="absolute top-3 left-20 z-5 inline-flex items-center justify-center w-7 h-7 p-0 border border-strong rounded-md bg-elevated text-muted cursor-pointer transition-colors duration-120 hover:text-danger hover:border-danger"
+            title="Clear canvas"
+            onClick={clear}
+          >
             <Trash2 size={15} />
           </button>
           {scopedPaths.length === 0 && (
-            <div className="iw-empty-state">
+            <div className="absolute inset-0 grid place-items-center pointer-events-none z-5 p-6 font-mono text-[13px] text-muted text-center">
               No JavaScript or TypeScript files found in this project.
             </div>
           )}
@@ -161,7 +167,7 @@ export default function App() {
       </Panel>
       {sourcePath && (
         <>
-          <PanelResizeHandle className="iw-resize-handle" />
+          <PanelResizeHandle className="w-px bg-border transition-colors duration-120 hover:bg-accent data-[resize-handle-state=drag]:bg-accent" />
           <Panel defaultSize={32} minSize={18} style={{ overflow: 'hidden' }}>
             <SourcePanel path={sourcePath} onClose={hideSource} />
           </Panel>
