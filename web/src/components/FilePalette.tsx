@@ -31,20 +31,28 @@ export default function FilePalette({ paths: allPaths, excluded, open, onClose, 
 
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: overlay click-to-dismiss
-    <div className="iw-palette-overlay" onClick={onClose}>
+    <div
+      className="fixed inset-0 bg-overlay-scrim flex items-start justify-center pt-30 z-1000 backdrop-blur"
+      onClick={onClose}
+    >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stop propagation */}
-      <div className="iw-palette-dialog" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="w-140 max-h-100 bg-dialog border border-strong rounded-[10px] shadow-[0_16px_48px_var(--iw-shadow-dialog)] overflow-hidden flex flex-col font-sans"
+        onClick={(e) => e.stopPropagation()}
+      >
         <Command label="File search">
           <Command.Input
             autoFocus
             placeholder="search files…"
-            className="iw-palette-input"
+            className="w-full px-4 py-3.5 text-[13px] font-mono border-0 border-b border-border bg-transparent text-text outline-none box-border caret-accent"
             value={query}
             onValueChange={setQuery}
             onKeyDown={(e) => e.key === 'Escape' && onClose()}
           />
-          <Command.List ref={listRef} className="iw-palette-list">
-            <Command.Empty className="iw-palette-empty">no files found</Command.Empty>
+          <Command.List ref={listRef} className="overflow-y-auto max-h-80">
+            <Command.Empty className="px-4 py-3 font-mono text-[12px] text-faint">
+              no files found
+            </Command.Empty>
             {paths.map((p) => {
               const name = p.split('/').pop() ?? p
               return (
@@ -52,10 +60,10 @@ export default function FilePalette({ paths: allPaths, excluded, open, onClose, 
                   key={p}
                   value={p}
                   onSelect={() => handleSelect(p)}
-                  className="iw-palette-item"
+                  className="px-4 py-2.25 cursor-pointer flex flex-col gap-0.5 border-l-2 border-transparent transition-[background,border-color] duration-100 data-[selected=true]:bg-selected data-[selected=true]:border-l-accent"
                 >
-                  <span className="iw-palette-item-name">{name}</span>
-                  <span className="iw-palette-item-path">{p}</span>
+                  <span className="font-mono font-medium text-[12px] text-text">{name}</span>
+                  <span className="font-mono text-[10px] text-muted">{p}</span>
                 </Command.Item>
               )
             })}

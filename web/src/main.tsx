@@ -14,7 +14,12 @@ class ErrorBoundary extends React.Component<
     return { error }
   }
   render() {
-    if (this.state.error) return <div className="loading">failed to load graph</div>
+    if (this.state.error)
+      return (
+        <div className="flex items-center justify-center h-screen font-mono text-[13px] text-faint bg-canvas tracking-wider">
+          failed to load graph
+        </div>
+      )
     return this.props.children
   }
 }
@@ -24,7 +29,13 @@ ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <ReactFlowProvider>
       <ErrorBoundary>
-        <Suspense fallback={<div className="loading">loading…</div>}>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-screen font-mono text-[13px] text-faint bg-canvas tracking-wider">
+              loading…
+            </div>
+          }
+        >
           <App />
         </Suspense>
       </ErrorBoundary>
