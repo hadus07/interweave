@@ -1,6 +1,6 @@
 import { Background, BackgroundVariant, Controls, ReactFlow } from '@xyflow/react'
 import { Moon, PanelLeft, Search, Sun, Trash2 } from 'lucide-react'
-import { use, useEffect, useRef, useState } from 'react'
+import { use, useEffect, useRef } from 'react'
 import {
   type ImperativePanelHandle,
   Panel,
@@ -10,49 +10,37 @@ import {
 import type { Graph } from '~shared/graph'
 
 import { useCanvasLayout } from '../hooks/useCanvasLayout'
-import { useGraphView } from '../hooks/useGraphView'
-import { useHidden } from '../hooks/useHidden'
-import { useTheme } from '../hooks/useTheme'
 import { matchAny } from '../lib/glob'
-import FileCardNode from './FileCardNode'
-import FilePalette from './FilePalette'
-import FileTree from './FileTree'
-import GradientEdge from './GradientEdge'
-import SourcePanel from './SourcePanel'
+import { AppStoreContext, createAppStore, useAppStore, useAppStoreSnapshot } from '../store'
+import { FileCardNode } from './FileCardNode'
+import { FilePalette } from './FilePalette'
+import { FileTree } from './FileTree'
+import { GradientEdge } from './GradientEdge'
+import { SourcePanel } from './SourcePanel'
 
 const graphPromise: Promise<Graph> = fetch('/graph').then(r => r.json())
 const nodeTypes = { fileCard: FileCardNode }
 const edgeTypes = { gradient: GradientEdge }
 
-function parseScopeParam(): string[] {
-  const raw = new URLSearchParams(window.location.search).get('scope')
-  return raw ? raw.split(',').filter(Boolean) : []
-}
-
-const SCOPE = parseScopeParam()
-
-function inScope(p: string) {
-  return SCOPE.length === 0 || SCOPE.some(s => p === s || p.startsWith(`${s}/`))
-}
-
-export default function App() {
+export function App() {
   const graph = use(graphPromise)
-  const {
-    expanded,
-    excluded,
-    sourcePath,
-    expand,
-    seed,
-    showSource,
-    hideSource,
-    remove,
-    setExclusion,
-    clear,
-  } = useGraphView(graph)
-  const [paletteOpen, setPaletteOpen] = useState(false)
+  return (
+    <AppStoreContext.Provider value={createAppStore(graph)}>
+      <AppCanvas graph={graph} />
+    </AppStoreContext.Provider>
+  )
+}
+
+function AppCanvas({ graph }: { graph: Graph }) {
+  const expanded = useAppStore(s => s.expanded)
+  const excluded = useAppStore(s => s.excluded)
+  const sourcePath = useAppStore(s => s.sourcePath)
+  const chips = useAppStore(s => s.chips)
+  const theme = useAppStore(s => s.theme)
+  const { seed, expand, showSource, hideSource, remove, clear, toggleTheme, setPaletteOpen } =
+    useAppStoreSnapshot()
+
   const panelRef = useRef<ImperativePanelHandle>(null)
-  const { chips, addChip, removeChip } = useHidden(graph.root)
-  const { theme, toggle: toggleTheme } = useTheme()
   const scopedPaths = Object.keys(graph.nodes).filter(inScope)
   const visiblePaths = chips.length ? scopedPaths.filter(p => !matchAny(chips, p)) : scopedPaths
   const hidden = chips.length
@@ -113,16 +101,7 @@ export default function App() {
         className="bg-sidebar border-r border-border font-mono text-[12px] text-text"
       >
         <div className="h-full overflow-auto">
-          <FileTree
-            paths={visiblePaths}
-            excluded={excluded}
-            activePath={selectedPath}
-            onSetExcluded={setExclusion}
-            onSeed={focusOn}
-            chips={chips}
-            onAddChip={addChip}
-            onRemoveChip={removeChip}
-          />
+          <FileTree paths={visiblePaths} activePath={selectedPath} onSeed={focusOn} />
         </div>
       </Panel>
       <PanelResizeHandle className="w-px bg-border transition-colors duration-120 hover:bg-accent data-[resize-handle-state=drag]:bg-accent" />
@@ -193,13 +172,18 @@ export default function App() {
           </Panel>
         </>
       )}
-      <FilePalette
-        paths={visiblePaths}
-        excluded={excluded}
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        onSelect={focusOn}
-      />
+      <FilePalette paths={visiblePaths} onSelect={focusOn} />
     </PanelGroup>
   )
+}
+
+const SCOPE = parseScopeParam()
+
+function parseScopeParam(): string[] {
+  const raw = new URLSearchParams(window.location.search).get('scope')
+  return raw ? raw.split(',').filter(Boolean) : []
+}
+
+function inScope(p: string) {
+  return SCOPE.length === 0 || SCOPE.some(s => p === s || p.startsWith(`${s}/`))
 }

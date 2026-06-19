@@ -15,7 +15,7 @@ const actionBase =
 // memo: React Flow re-renders every node on any nodes-array change (select, drag,
 // pass-2 reposition). Position/selected updates keep data ref stable, so memo skips
 // the re-render unless this card's own data actually changed.
-function FileCardNode({ data }: NodeProps) {
+function FileCardNodeBase({ data }: NodeProps) {
   const {
     name,
     path,
@@ -100,4 +100,4 @@ function FileCardNode({ data }: NodeProps) {
   )
 }
 
-export default memo(FileCardNode)
+export const FileCardNode = memo(FileCardNodeBase)

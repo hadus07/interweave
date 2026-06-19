@@ -32,6 +32,7 @@ go stale (restart to refresh them).
 ## Code style
 
 - Prefer function declarations over arrow-function expressions for named functions with block bodies — `function foo() {}` not `const foo = () => {}`. Keep arrows for: one-liner expressions (`const key = (x) => \`prefix:${x}\``), inline object-returning lambdas, and callbacks passed directly to JSX or array methods.
+- Prefer named exports over default exports everywhere — `export function Foo` / `export const foo`, never `export default`.
 
 ## Locked scaffold decisions (do not re-litigate)
 

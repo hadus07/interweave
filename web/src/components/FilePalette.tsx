@@ -1,15 +1,16 @@
 import { Command } from 'cmdk'
 import { useEffect, useRef, useState } from 'react'
+import { useAppStore, useAppStoreSnapshot } from '../store'
 
 interface Props {
   paths: string[]
-  excluded: Set<string>
-  open: boolean
-  onClose: () => void
   onSelect: (path: string) => void
 }
 
-export default function FilePalette({ paths: allPaths, excluded, open, onClose, onSelect }: Props) {
+export function FilePalette({ paths: allPaths, onSelect }: Props) {
+  const excluded = useAppStore(s => s.excluded)
+  const open = useAppStore(s => s.paletteOpen)
+  const { setPaletteOpen } = useAppStoreSnapshot()
   const [query, setQuery] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -26,7 +27,7 @@ export default function FilePalette({ paths: allPaths, excluded, open, onClose, 
 
   function handleSelect(path: string) {
     onSelect(path)
-    onClose()
+    setPaletteOpen(false)
   }
 
   return (
@@ -34,7 +35,7 @@ export default function FilePalette({ paths: allPaths, excluded, open, onClose, 
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay click-to-dismiss
     <div
       className="fixed inset-0 bg-overlay-scrim flex items-start justify-center pt-30 z-1000 backdrop-blur"
-      onClick={onClose}
+      onClick={() => setPaletteOpen(false)}
     >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stop propagation */}
       {/* biome-ignore lint/a11y/noStaticElementInteractions: stop propagation */}
@@ -49,7 +50,7 @@ export default function FilePalette({ paths: allPaths, excluded, open, onClose, 
             className="w-full px-4 py-3.5 text-[13px] font-mono border-0 border-b border-border bg-transparent text-text outline-none box-border caret-accent"
             value={query}
             onValueChange={setQuery}
-            onKeyDown={e => e.key === 'Escape' && onClose()}
+            onKeyDown={e => e.key === 'Escape' && setPaletteOpen(false)}
           />
           <Command.List ref={listRef} className="overflow-y-auto max-h-80">
             <Command.Empty className="px-4 py-3 font-mono text-[12px] text-faint">

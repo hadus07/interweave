@@ -1,6 +1,6 @@
 import { Check, Copy, ExternalLink, X } from 'lucide-react'
 import { Component, type ReactNode, Suspense, useState } from 'react'
-import SourceView from './SourceView'
+import { SourceView } from './SourceView'
 
 class SourceErrorBoundary extends Component<{ children: ReactNode }, { err: boolean }> {
   state = { err: false }
@@ -20,10 +20,10 @@ const actionBase =
   'bg-transparent border-0 p-0 appearance-none outline-none flex items-center justify-center w-4.5 h-4.5 rounded text-[12px] leading-none text-muted cursor-pointer transition-[color,background] duration-120 hover:text-accent-hover hover:bg-accent-wash-soft'
 const actionRemove = `${actionBase} hover:text-danger hover:bg-danger-wash`
 
-export default function SourcePanel({ path, onClose }: { path: string; onClose(): void }) {
+export function SourcePanel({ path, onClose }: { path: string; onClose(): void }) {
   const [copied, setCopied] = useState(false)
 
-  const copyPath = () => {
+  function copyPath() {
     navigator.clipboard.writeText(path).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 1200)
@@ -32,7 +32,7 @@ export default function SourcePanel({ path, onClose }: { path: string; onClose()
 
   // ponytail: server opens the file in the OS default app for its type; swap for
   // an explicit editor command / $EDITOR if "default app" isn't the editor.
-  const openInEditor = () => {
+  function openInEditor() {
     fetch(`/open?path=${encodeURIComponent(path)}`).catch(err =>
       console.error('failed to open in editor', err),
     )

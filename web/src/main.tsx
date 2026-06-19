@@ -3,7 +3,7 @@ import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import '@xyflow/react/dist/style.css'
 import './styles.css'
-import App from './components/App'
+import { App } from './components/App'
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },

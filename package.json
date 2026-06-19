@@ -53,7 +53,8 @@
     "react-resizable-panels": "^2.1.9",
     "shiki": "^1.6.0",
     "tailwind-merge": "^3.6.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",

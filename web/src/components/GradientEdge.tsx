@@ -4,7 +4,7 @@ import { memo } from 'react'
 // Gradient encodes import direction: amber (importer) → cyan (imported).
 // userSpaceOnUse + real endpoint coords is required, else the gradient maps to
 // the path bounding box and misaligns on near-vertical/horizontal edges.
-function GradientEdge({
+function GradientEdgeBase({
   id,
   data,
   sourceX,
@@ -54,4 +54,4 @@ function GradientEdge({
   )
 }
 
-export default memo(GradientEdge)
+export const GradientEdge = memo(GradientEdgeBase)
