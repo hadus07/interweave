@@ -248,6 +248,7 @@ body {
   padding: 10px 12px;
   font-size: 12px;
   line-height: 1.5;
+  /* biome-ignore lint/complexity/noImportantStyles: overrides .react-flow__node inline bg */
   background: transparent !important;
 }
 

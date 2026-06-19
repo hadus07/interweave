@@ -31,11 +31,13 @@ export default function FilePalette({ paths: allPaths, excluded, open, onClose, 
 
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: overlay click-to-dismiss
+    // biome-ignore lint/a11y/noStaticElementInteractions: overlay click-to-dismiss
     <div
       className="fixed inset-0 bg-overlay-scrim flex items-start justify-center pt-30 z-1000 backdrop-blur"
       onClick={onClose}
     >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: stop propagation */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: stop propagation */}
       <div
         className="w-140 max-h-100 bg-dialog border border-strong rounded-[10px] shadow-[0_16px_48px_var(--iw-shadow-dialog)] overflow-hidden flex flex-col font-sans"
         onClick={(e) => e.stopPropagation()}

@@ -2,13 +2,17 @@ import { ChevronsDownUp, ChevronsUpDown, File, Folder, X } from 'lucide-react'
 import { type RefObject, useEffect, useRef, useState } from 'react'
 import { cn } from '../lib/cn'
 import { globToRegExp } from '../lib/glob'
-import { type TreeNode, buildTree, descendantFiles } from '../lib/treeBuilder'
+import { buildTree, descendantFiles, type TreeNode } from '../lib/treeBuilder'
 
 function ChipInput({
   chips,
   onAddChip,
   onRemoveChip,
-}: { chips: string[]; onAddChip: (p: string) => void; onRemoveChip: (p: string) => void }) {
+}: {
+  chips: string[]
+  onAddChip: (p: string) => void
+  onRemoveChip: (p: string) => void
+}) {
   const [value, setValue] = useState('')
   const [invalid, setInvalid] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
@@ -221,6 +225,7 @@ function FileRow({
         <File size={13} />
       </span>
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: label seeds a card, keyboard is via the canvas */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: label seeds a card, keyboard is via the canvas */}
       <span
         className={cn(
           'cursor-pointer overflow-hidden text-ellipsis flex-1 min-w-0 hover:text-accent-hover',

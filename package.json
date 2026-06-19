@@ -27,7 +27,10 @@
   "bin": {
     "intertangle": "dist/cli.js"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "npm run build:cli && npm run build:web",
     "build:cli": "tsup",

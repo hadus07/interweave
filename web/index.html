@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <script>
       // Set the theme before first paint so light-mode users never see a dark flash.
-      (function () {
+      ;(() => {
         var t = localStorage.getItem('intertangle:theme')
         if (t !== 'light' && t !== 'dark')
           t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'

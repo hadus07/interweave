@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { type ICruiseOptions, cruise } from 'dependency-cruiser'
+import { cruise, type ICruiseOptions } from 'dependency-cruiser'
 import ignore from 'ignore'
 import JSON5 from 'json5'
 import type { ExternalLabel, ExternalLabelType, Graph } from './shared/graph.js'

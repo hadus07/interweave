@@ -9,7 +9,6 @@ import {
 } from 'react-resizable-panels'
 import type { Graph } from '~shared/graph'
 
-const graphPromise: Promise<Graph> = fetch('/graph').then((r) => r.json())
 import { useCanvasLayout } from '../hooks/useCanvasLayout'
 import { useGraphView } from '../hooks/useGraphView'
 import { useHidden } from '../hooks/useHidden'
@@ -21,6 +20,7 @@ import FileTree from './FileTree'
 import GradientEdge from './GradientEdge'
 import SourcePanel from './SourcePanel'
 
+const graphPromise: Promise<Graph> = fetch('/graph').then((r) => r.json())
 const nodeTypes = { fileCard: FileCardNode }
 const edgeTypes = { gradient: GradientEdge }
 
