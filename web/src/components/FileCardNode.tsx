@@ -10,7 +10,7 @@ const extClass: Record<string, string> = {
 }
 
 const actionBase =
-  '[all:unset] flex items-center justify-center w-4.5 h-4.5 rounded text-[12px] leading-none text-muted cursor-pointer transition-[color,background] duration-150'
+  'inline-flex items-center justify-center w-5 h-5 p-0 rounded-md bg-elevated text-muted cursor-pointer transition-colors duration-120'
 
 // memo: React Flow re-renders every node on any nodes-array change (select, drag,
 // pass-2 reposition). Position/selected updates keep data ref stable, so memo skips
@@ -39,7 +39,7 @@ function FileCardNode({ data }: NodeProps) {
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onShowSource(path)}
           >
-            <Code2 size={14} />
+            <Code2 size={12} />
           </button>
           <button
             type="button"
@@ -48,14 +48,15 @@ function FileCardNode({ data }: NodeProps) {
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onRemove(path)}
           >
-            <X size={14} />
+            <X size={12} />
           </button>
         </div>
       </div>
       <div className="flex gap-1.5 px-2.5 pt-1.5 pb-2 border-t border-border">
         <button
           type="button"
-          className="appearance-none bg-transparent outline-none flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-[5px] text-[11px] font-sans cursor-pointer whitespace-nowrap transition-[border-color,color,background] duration-150 tracking-[0.01em] border border-chip-imports text-accent-dim hover:border-accent hover:text-accent-hover hover:bg-accent-wash-faint"
+          disabled={importCount === 0}
+          className="appearance-none bg-transparent outline-none flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-[5px] text-[11px] font-sans cursor-pointer whitespace-nowrap transition-[border-color,color,background] duration-150 tracking-[0.01em] border border-chip-imports text-accent-dim hover:border-accent hover:text-accent-hover hover:bg-accent-wash-faint disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-chip-imports disabled:hover:text-accent-dim disabled:hover:bg-transparent"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onExpand(path, 'imports')}
         >
@@ -63,7 +64,8 @@ function FileCardNode({ data }: NodeProps) {
         </button>
         <button
           type="button"
-          className="appearance-none bg-transparent outline-none flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-[5px] text-[11px] font-sans cursor-pointer whitespace-nowrap transition-[border-color,color,background] duration-150 tracking-[0.01em] border border-chip-importedby text-info-dim hover:border-info hover:text-info-hover hover:bg-info-wash"
+          disabled={importedByCount === 0}
+          className="appearance-none bg-transparent outline-none flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-[5px] text-[11px] font-sans cursor-pointer whitespace-nowrap transition-[border-color,color,background] duration-150 tracking-[0.01em] border border-chip-importedby text-info-dim hover:border-info hover:text-info-hover hover:bg-info-wash disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-chip-importedby disabled:hover:text-info-dim disabled:hover:bg-transparent"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onExpand(path, 'importedBy')}
         >

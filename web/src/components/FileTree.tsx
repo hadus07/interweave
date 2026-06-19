@@ -140,17 +140,20 @@ export default function FileTree({
   }
 
   const iconBtnClass =
-    'inline-flex items-center justify-center w-7 h-7 p-0 border border-strong rounded-md bg-elevated text-muted cursor-pointer transition-colors duration-120 hover:text-accent-hover hover:border-accent'
+    'inline-flex items-center justify-center w-5 h-5 p-0 border border-strong rounded-md bg-elevated text-muted cursor-pointer transition-colors duration-120 hover:text-accent-hover hover:border-accent'
 
   return (
     <div className="px-1 pb-2">
       <div className="sticky top-0 z-1 px-2 pt-3 pb-1.5 mb-1 border-b border-border bg-sidebar">
         <div className="flex justify-end gap-1 mb-1.5">
+          <div className="flex-1">
+            <span className="text-sm font-semibold tracking-tight">intertangle</span>
+          </div>
           <button type="button" className={iconBtnClass} title="Expand all" onClick={expandAll}>
-            <ChevronsUpDown size={15} />
+            <ChevronsUpDown size={12} />
           </button>
           <button type="button" className={iconBtnClass} title="Collapse all" onClick={collapseAll}>
-            <ChevronsDownUp size={15} />
+            <ChevronsDownUp size={12} />
           </button>
         </div>
         <ChipInput chips={chips} onAddChip={onAddChip} onRemoveChip={onRemoveChip} />
