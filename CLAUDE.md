@@ -2,14 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project state
-
-Slice 01 (walking skeleton) is in place. The package scaffold, core source modules,
-Vite React frontend, fixtures, and seam tests now exist. Read before building:
-
-- `docs/prd/prd-import-graph-explorer.md` — full design, implementation decisions, locked scaffold decisions, testing seams. Authoritative.
-- `docs/issues/open/NN-*.md` — implementation slices; pick up at 02 once 01 lands.
-
 ## What intertangle is
 
 A global CLI run inside any TS/JS project. It scans the project once with
@@ -62,8 +54,6 @@ Chip expansion, fuzzy palette, pan/zoom, and visual highlight correctness are ma
 
 - Conventional-commit prefixes (`feat:/fix:/chore:`) by habit, no enforcement.
 - One slice per branch, named like the issue (`01-walking-skeleton`).
-- Done-signal: `git mv docs/issues/open/NN.md docs/issues/resolved/NN.md` in the landing commit.
-- After completing a code change, invoke the `sync-docs` skill (`/sync-docs`) to tick issue acceptance criteria, move resolved issues, and reflect any design deviation in the PRD.
 
 ## Commands
 

@@ -4,8 +4,7 @@ Explore a TypeScript/JavaScript project's import graph on an infinite canvas in 
 browser. Start from the files you care about and pull in their dependencies — in either
 direction — on demand, with the source right there.
 
-> **Status:** early development. The design is settled (see [`docs/prd/prd-import-graph-explorer.md`](docs/prd/prd-import-graph-explorer.md))
-> and work is sliced into issues under [`docs/issues/open/`](docs/issues/open/). Not yet published to npm.
+![intertangle canvas showing the intertangle source](assets/hero.png)
 
 ## What it does
 
@@ -18,6 +17,10 @@ direction — on demand, with the source right there.
   scoped to your own code.
 - TypeScript path aliases resolve automatically from your `tsconfig`.
 - Runs entirely on your machine. Nothing leaves it.
+
+## Requirements
+
+Node ≥ 18
 
 ## Install
 

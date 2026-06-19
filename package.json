@@ -1,12 +1,33 @@
 {
   "name": "intertangle",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "Explore TS/JS import graphs on an infinite canvas",
   "type": "module",
+  "author": "Ibrohim Bahromov",
+  "license": "MIT",
+  "keywords": [
+    "import-graph",
+    "dependency-graph",
+    "typescript",
+    "javascript",
+    "visualization",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hadus07/intertangle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hadus07/intertangle/issues"
+  },
+  "homepage": "https://github.com/hadus07/intertangle#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "bin": {
     "intertangle": "dist/cli.js"
   },
-  "files": ["dist"],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "npm run build:cli && npm run build:web",
     "build:cli": "tsup",
